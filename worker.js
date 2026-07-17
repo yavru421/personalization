@@ -299,6 +299,8 @@ export default {
             subscription_tier: user.subscription_tier,
             subscription_status: user.subscription_status,
           }
+        }, 200, {
+          "Set-Cookie": `dgc-session=${jwt}; Domain=.dondlingergc.com; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=2592000`
         });
       } catch (err) {
         return jsonResponse({ error: err.message || "Token refresh failed" }, 500);
