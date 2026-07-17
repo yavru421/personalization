@@ -27,4 +27,6 @@
 - **Action**: Removed the obsolete `.github/workflows/deploy.yml` directory and file to rely natively on Cloudflare Pages CI/CD integration.
 - **Action**: Added `'unsafe-inline'` to the CSP `script-src` header in `wwwroot/_headers` to allow loading the inline importmaps required by Blazor WebAssembly modules.
 - **Architectural Decision**: Adopted Vector Alpha (out-of-band CLI & IaC-based state mutations) for portal administration to maintain a zero-web-UI admin attack surface.
+- **Action**: Wrote a Python-based API integration test script (`test_endpoints.py`) to verify all registration, login, JWT claims parsing, settings sync (D1 write/read), token rotation, and logouts.
+- **Verification**: Ran `test_endpoints.py` against the production endpoints; all 8 test stages passed deterministically with HTTP 200 OK.
 - **Status**: Done successfully.
