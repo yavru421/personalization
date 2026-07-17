@@ -21,4 +21,5 @@
 - **Details**: Designed beautiful auth forms, synced dashboard panels (exposing email, tier, credits), local/ZLA mode toggles, and downstream JWT copy integration.
 - **Verification**: Verified compilation and local build is 100% successful with Blazor WebAssembly.
 - **Action**: Cleaned up obsolete template titles, loaders, and missing script dependencies in `wwwroot/index.html`.
+- **Action**: Purged remaining template references to "Pour & Measure" and "PourReady" from `manifest.webmanifest`, `_headers`, and `NotFound.razor`.
 - **Status**: Done successfully.
