@@ -164,7 +164,7 @@ export default {
         const userId = crypto.randomUUID();
 
         await env.DB.prepare(
-          "INSERT INTO users (id, email, password_hash, salt, subscription_tier, subscription_status) VALUES (?, ?, ?, ?, 'free', 'inactive')"
+          "INSERT INTO users (id, email, password_hash, salt, subscription_tier, subscription_status, credit_balance_cents) VALUES (?, ?, ?, ?, 'free', 'inactive', 1000)"
         ).bind(userId, email, hash, salt).run();
 
         // Generate signed JWT (exp: 1 hour)
@@ -174,13 +174,14 @@ export default {
           email: email,
           subscription_tier: "free",
           subscription_status: "inactive",
+          credit_balance_cents: 1000,
           iat: now,
           exp: now + 3600,
         };
         const jwt = await signJwt(payload);
 
         return jsonResponse(
-          { success: true, userId, token: jwt },
+          { success: true, userId, token: jwt, creditBalanceCents: 1000 },
           200,
           { "Set-Cookie": `dgc-session=${jwt}; Domain=.dondlingergc.com; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=2592000` }
         );
@@ -214,6 +215,7 @@ export default {
           email: user.email,
           subscription_tier: user.subscription_tier,
           subscription_status: user.subscription_status,
+          credit_balance_cents: user.credit_balance_cents || 0,
           iat: now,
           exp: now + 3600,
         };
@@ -233,11 +235,13 @@ export default {
           success: true,
           token: jwt,
           refresh_token: refreshToken,
+          creditBalanceCents: user.credit_balance_cents || 0,
           user: {
             id: user.id,
             email: user.email,
             subscription_tier: user.subscription_tier,
             subscription_status: user.subscription_status,
+            credit_balance_cents: user.credit_balance_cents || 0,
           }
         }, 200, {
           "Set-Cookie": `dgc-session=${jwt}; Domain=.dondlingergc.com; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=2592000`
@@ -284,6 +288,7 @@ export default {
           email: user.email,
           subscription_tier: user.subscription_tier,
           subscription_status: user.subscription_status,
+          credit_balance_cents: user.credit_balance_cents || 0,
           iat: now,
           exp: now + 3600,
         };
@@ -293,11 +298,13 @@ export default {
           success: true,
           token: jwt,
           refresh_token: newRefreshToken,
+          creditBalanceCents: user.credit_balance_cents || 0,
           user: {
             id: user.id,
             email: user.email,
             subscription_tier: user.subscription_tier,
             subscription_status: user.subscription_status,
+            credit_balance_cents: user.credit_balance_cents || 0,
           }
         }, 200, {
           "Set-Cookie": `dgc-session=${jwt}; Domain=.dondlingergc.com; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=2592000`

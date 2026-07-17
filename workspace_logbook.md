@@ -44,3 +44,6 @@
 - **Action**: Configured all outgoing HTTP requests in [Index.razor.cs](file:///C:/dev/personalization/Pages/Index.razor.cs) to include browser credentials (`BrowserRequestCredentials.Include`).
 - **Details**: Rewrote `PostAsJsonAsync` helpers to use `HttpRequestMessage` setup, imported `Microsoft.AspNetCore.Components.WebAssembly.Http`, and successfully built the project using `dotnet build`.
 - **Status**: Verified build compiled with zero errors.
+
+### 2026-07-17: Drafted DB Migration Plan
+Drafted an implementation plan to add credit_balance_cents to the users D1 table and update worker.js.

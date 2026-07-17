@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN credit_balance_cents INTEGER NOT NULL DEFAULT 1000;
