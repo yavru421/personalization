@@ -24,4 +24,5 @@
 - **Action**: Purged remaining template references to "Pour & Measure" and "PourReady" from `manifest.webmanifest`, `_headers`, and `NotFound.razor`.
 - **Action**: Generated a cryptographically secure 256-bit key and stored it as Cloudflare Worker secret `JWT_SECRET` via Wrangler CLI.
 - **Action**: Stored the key in local DPAPI secrets-vault under alias `cloudflare/personalization-jwt-secret`.
+- **Action**: Removed the obsolete `.github/workflows/deploy.yml` directory and file to rely natively on Cloudflare Pages CI/CD integration.
 - **Status**: Done successfully.
