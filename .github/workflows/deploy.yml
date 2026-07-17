@@ -21,7 +21,7 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Publish Blazor WebAssembly App
-        run: dotnet publish PourAndMeasure.csproj -c Release -o output
+        run: dotnet publish Personalization.csproj -c Release -o output
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
