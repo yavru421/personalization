@@ -22,4 +22,5 @@
 - **Verification**: Verified compilation and local build is 100% successful with Blazor WebAssembly.
 - **Action**: Cleaned up obsolete template titles, loaders, and missing script dependencies in `wwwroot/index.html`.
 - **Action**: Purged remaining template references to "Pour & Measure" and "PourReady" from `manifest.webmanifest`, `_headers`, and `NotFound.razor`.
+- **Action**: Generated a cryptographically secure 256-bit key and stored it as Cloudflare Worker secret `JWT_SECRET` via Wrangler CLI.
 - **Status**: Done successfully.
