@@ -32,7 +32,7 @@ def run_tests():
     print(f"[TEST 1] Registering test user: {test_email}...")
     status, res, headers = request_json(f"{BASE_URL}/api/auth/register", {"email": test_email, "password": test_password})
     print(f"Status: {status}, Response: {res}")
-    print(f"Set-Cookie header: {headers.get('Set-Cookie')}")
+    print(f"All headers: {headers.items()}")
     assert status == 200, "Registration failed"
     assert "userId" in res, "No userId returned"
     assert headers.get('Set-Cookie') is not None and "dgc-session" in headers.get('Set-Cookie'), "Registration Set-Cookie missing"
