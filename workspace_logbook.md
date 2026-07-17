@@ -47,3 +47,6 @@
 
 ### 2026-07-17: Drafted DB Migration Plan
 Drafted an implementation plan to add credit_balance_cents to the users D1 table and update worker.js.
+
+### 2026-07-17: Credit balance changes deployed
+Added credit_balance_cents support in registration, login, and refresh, set signup bonus to 1000 (.00), and pushed changes to Yavru421 repos.
