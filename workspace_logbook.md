@@ -26,4 +26,5 @@
 - **Action**: Stored the key in local DPAPI secrets-vault under alias `cloudflare/personalization-jwt-secret`.
 - **Action**: Removed the obsolete `.github/workflows/deploy.yml` directory and file to rely natively on Cloudflare Pages CI/CD integration.
 - **Action**: Added `'unsafe-inline'` to the CSP `script-src` header in `wwwroot/_headers` to allow loading the inline importmaps required by Blazor WebAssembly modules.
+- **Architectural Decision**: Adopted Vector Alpha (out-of-band CLI & IaC-based state mutations) for portal administration to maintain a zero-web-UI admin attack surface.
 - **Status**: Done successfully.
