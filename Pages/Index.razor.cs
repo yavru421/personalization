@@ -104,7 +104,7 @@ namespace Personalization.Pages
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
-                    if (result != null && result.Success)
+                    if (result != null && (result.Success || !string.IsNullOrEmpty(result.Token)))
                     {
                         jwtToken = result.Token;
                         isLoggedIn = true;

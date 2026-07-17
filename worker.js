@@ -188,6 +188,7 @@ export default {
         ).bind(sessionUuid, user.id, tokenHash, expiresAt).run();
 
         return jsonResponse({
+          success: true,
           token: jwt,
           refresh_token: refreshToken,
           user: {
@@ -245,6 +246,7 @@ export default {
         const jwt = await signJwt(payload);
 
         return jsonResponse({
+          success: true,
           token: jwt,
           refresh_token: newRefreshToken,
           user: {
