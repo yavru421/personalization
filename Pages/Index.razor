@@ -131,26 +131,7 @@
                             </div>
                         </div>
 
-                        <!-- Downstream JWT Integration -->
-                        <div class="glass-card shadow-glass p-4">
-                            <h3 class="h5 text-white mb-3 d-flex align-items-center gap-2">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-                                Gateway Integration Token
-                            </h3>
-                            <p class="text-sm text-muted-cyan mb-3">
-                                This JWT authenticates downstream microservices (like <strong>WaZWeather</strong>). 
-                                Pass this in the <code>Authorization: Bearer &lt;Token&gt;</code> header to query protected weather services securely.
-                            </p>
-                            
-                            <div class="jwt-container mb-3 p-3 rounded bg-glass-dark font-mono text-xs text-break border-glass text-muted-cyan">
-                                @jwtToken
-                            </div>
-                            
-                            <button class="btn btn-cyan btn-glow w-100 d-flex align-items-center justify-content-center gap-2 py-2" @onclick="CopyTokenToClipboard">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                                <span>Copy Token</span>
-                            </button>
-                        </div>
+
                     </div>
                 </div>
 
