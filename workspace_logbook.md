@@ -25,4 +25,5 @@
 - **Action**: Generated a cryptographically secure 256-bit key and stored it as Cloudflare Worker secret `JWT_SECRET` via Wrangler CLI.
 - **Action**: Stored the key in local DPAPI secrets-vault under alias `cloudflare/personalization-jwt-secret`.
 - **Action**: Removed the obsolete `.github/workflows/deploy.yml` directory and file to rely natively on Cloudflare Pages CI/CD integration.
+- **Action**: Added `'unsafe-inline'` to the CSP `script-src` header in `wwwroot/_headers` to allow loading the inline importmaps required by Blazor WebAssembly modules.
 - **Status**: Done successfully.
