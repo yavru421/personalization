@@ -1,5 +1,6 @@
-name = "Personalization"
+name = "personalization"
 compatibility_date = "2024-05-26"
+main = "worker.js"
 
 [build]
 command = "bash build.sh"
@@ -7,5 +8,11 @@ command = "bash build.sh"
 [assets]
 directory = "output/wwwroot"
 not_found_handling = "single-page-application"
-include = ["**/*"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "dondlingergc-identity-db"
+database_id = "1128e99a-70e1-458c-b0b7-d548a10a5533"
+
+
 
