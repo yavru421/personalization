@@ -30,3 +30,17 @@
 - **Action**: Wrote a Python-based API integration test script (`test_endpoints.py`) to verify all registration, login, JWT claims parsing, settings sync (D1 write/read), token rotation, and logouts.
 - **Verification**: Ran `test_endpoints.py` against the production endpoints; all 8 test stages passed deterministically with HTTP 200 OK.
 - **Status**: Done successfully.
+
+## 2026-07-17 16:47:00
+
+- **Role**: Antigravity Developer
+- **Action**: Modified [worker.js](file:///C:/dev/personalization/worker.js) to support wildcard domain cookie authentication.
+- **Details**: Updated `jsonResponse` helper to accept custom headers, added `getCookie` helper, updated `authenticate(req)` to check for `dgc-session` cookie first, and appended `Set-Cookie` headers to `/api/auth/register`, `/api/auth/login`, and `/api/auth/logout`.
+- **Status**: Completed.
+
+## 2026-07-17 16:47:30
+
+- **Role**: Antigravity Developer
+- **Action**: Configured all outgoing HTTP requests in [Index.razor.cs](file:///C:/dev/personalization/Pages/Index.razor.cs) to include browser credentials (`BrowserRequestCredentials.Include`).
+- **Details**: Rewrote `PostAsJsonAsync` helpers to use `HttpRequestMessage` setup, imported `Microsoft.AspNetCore.Components.WebAssembly.Http`, and successfully built the project using `dotnet build`.
+- **Status**: Verified build compiled with zero errors.

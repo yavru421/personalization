@@ -15,10 +15,17 @@ export default {
     }
 
     // Helper: JSON response
-    const jsonResponse = (data, status = 200) => {
+    const jsonResponse = (data, status = 200, customHeaders = {}) => {
+      const headers = new Headers({
+        "Content-Type": "application/json",
+        ...corsHeaders,
+      });
+      for (const [key, value] of Object.entries(customHeaders)) {
+        headers.set(key, value);
+      }
       return new Response(JSON.stringify(data), {
         status,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers,
       });
     };
 
@@ -119,8 +126,27 @@ export default {
       return bufferToBase64(hashBuffer);
     };
 
-    // Authenticate user via Authorization Header
+    // Helper to get cookie value
+    const getCookie = (cookieHeader, name) => {
+      if (!cookieHeader) return null;
+      const cookies = cookieHeader.split(";");
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + "=")) {
+          return cookie.substring(name.length + 1);
+        }
+      }
+      return null;
+    };
+
+    // Authenticate user via Cookie or Authorization Header
     const authenticate = async (req) => {
+      const cookieHeader = req.headers.get("Cookie");
+      const dgcSession = getCookie(cookieHeader, "dgc-session");
+      if (dgcSession) {
+        const claims = await verifyJwt(dgcSession);
+        if (claims) return claims;
+      }
       const authHeader = req.headers.get("Authorization");
       if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
       const token = authHeader.substring(7);
@@ -141,7 +167,23 @@ export default {
           "INSERT INTO users (id, email, password_hash, salt, subscription_tier, subscription_status) VALUES (?, ?, ?, ?, 'free', 'inactive')"
         ).bind(userId, email, hash, salt).run();
 
-        return jsonResponse({ success: true, userId });
+        // Generate signed JWT (exp: 1 hour)
+        const now = Math.floor(Date.now() / 1000);
+        const payload = {
+          sub: userId,
+          email: email,
+          subscription_tier: "free",
+          subscription_status: "inactive",
+          iat: now,
+          exp: now + 3600,
+        };
+        const jwt = await signJwt(payload);
+
+        return jsonResponse(
+          { success: true, userId, token: jwt },
+          200,
+          { "Set-Cookie": `dgc-session=${jwt}; Domain=.dondlingergc.com; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=2592000` }
+        );
       } catch (err) {
         return jsonResponse({ error: err.message || "Registration failed" }, 500);
       }
@@ -197,6 +239,8 @@ export default {
             subscription_tier: user.subscription_tier,
             subscription_status: user.subscription_status,
           }
+        }, 200, {
+          "Set-Cookie": `dgc-session=${jwt}; Domain=.dondlingergc.com; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=2592000`
         });
       } catch (err) {
         return jsonResponse({ error: err.message || "Login failed" }, 500);
@@ -263,14 +307,24 @@ export default {
 
     if (url.pathname === "/api/auth/logout" && request.method === "POST") {
       try {
-        const { refresh_token } = await request.json();
+        let refresh_token = null;
+        try {
+          const body = await request.json();
+          refresh_token = body?.refresh_token;
+        } catch (e) {
+          // Body parsing could fail if empty request, that's fine
+        }
         if (refresh_token) {
           const tokenHash = await sha256(refresh_token);
           await env.DB.prepare(
             "UPDATE user_sessions SET is_revoked = 1 WHERE token_hash = ?"
           ).bind(tokenHash).run();
         }
-        return jsonResponse({ success: true });
+        return jsonResponse(
+          { success: true },
+          200,
+          { "Set-Cookie": "dgc-session=; Domain=.dondlingergc.com; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT" }
+        );
       } catch (err) {
         return jsonResponse({ error: err.message || "Logout failed" }, 500);
       }

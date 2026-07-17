@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.JSInterop;
 
 namespace Personalization.Pages
@@ -83,7 +84,10 @@ namespace Personalization.Pages
                 HttpResponseMessage response;
                 try
                 {
-                    response = await Http.PostAsJsonAsync(endpoint, requestPayload);
+                    var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+                    request.Content = JsonContent.Create(requestPayload);
+                    request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+                    response = await Http.SendAsync(request);
                 }
                 catch (Exception)
                 {
@@ -152,6 +156,18 @@ namespace Personalization.Pages
             
             try
             {
+                try
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/logout");
+                    request.Content = JsonContent.Create(new { refresh_token = "" });
+                    request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+                    await Http.SendAsync(request);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Logout API request error: {ex.Message}");
+                }
+
                 await JS.InvokeVoidAsync("localStorage.removeItem", "wazweather_jwt");
                 await JS.InvokeVoidAsync("localStorage.removeItem", "wazweather_email");
             }
@@ -190,6 +206,7 @@ namespace Personalization.Pages
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, "/api/settings");
                     request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwtToken);
+                    request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
                     var response = await Http.SendAsync(request);
                     if (response.IsSuccessStatusCode)
                     {
@@ -255,6 +272,7 @@ namespace Personalization.Pages
                 var request = new HttpRequestMessage(HttpMethod.Post, "/api/settings");
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwtToken);
                 request.Content = JsonContent.Create(userSettings);
+                request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
                 
                 var response = await Http.SendAsync(request);
                 if (response.IsSuccessStatusCode)
