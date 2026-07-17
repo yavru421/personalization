@@ -1,0 +1,10 @@
+node_modules/
+bin/
+obj/
+.wrangler/
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
