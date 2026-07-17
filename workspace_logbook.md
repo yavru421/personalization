@@ -20,4 +20,5 @@
 - **Action**: Replaced `Pages/Index.razor`, `Pages/Index.razor.cs`, and `Pages/Index.razor.css` with a premium glassmorphic portal interface.
 - **Details**: Designed beautiful auth forms, synced dashboard panels (exposing email, tier, credits), local/ZLA mode toggles, and downstream JWT copy integration.
 - **Verification**: Verified compilation and local build is 100% successful with Blazor WebAssembly.
+- **Action**: Cleaned up obsolete template titles, loaders, and missing script dependencies in `wwwroot/index.html`.
 - **Status**: Done successfully.
