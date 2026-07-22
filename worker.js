@@ -406,18 +406,22 @@ export default {
           return jsonResponse({ error: "Unauthorized" }, 401);
         }
         const { results } = await env.DB.prepare(
-          "SELECT id, amount_cents, description, created_at FROM credit_ledger WHERE user_id = ? ORDER BY created_at DESC LIMIT 20"
+          "SELECT id, amount_cents, balance_after_cents, transaction_type, reference_id, created_at FROM credit_ledger WHERE user_id = ? ORDER BY created_at DESC LIMIT 20"
         ).bind(claims.sub).all();
 
         return jsonResponse({
           success: true,
-          history: results || []
+          history: (results || []).map(r => ({
+            id: r.id,
+            amount_cents: r.amount_cents,
+            description: r.transaction_type + (r.reference_id ? `: ${r.reference_id}` : ''),
+            created_at: r.created_at
+          }))
         });
       } catch (err) {
-        return jsonResponse({ error: err.message || "Failed to fetch credit history" }, 500);
+        return jsonResponse({ error: err.stack || err.message || "Failed to fetch credit history" }, 500);
       }
     }
-
 
     if (url.pathname === "/api/auth/logout" && request.method === "POST") {
 
@@ -552,9 +556,11 @@ export default {
         await env.DB.prepare("UPDATE users SET credit_balance_cents = ? WHERE id = ?").bind(newBalance, claims.sub).run();
         
         try {
-          const ledgerId = crypto.randomUUID();
-          await env.DB.prepare("INSERT INTO credit_ledger (id, user_id, amount_cents, description, created_at) VALUES (?, ?, ?, ?, ?)").bind(ledgerId, claims.sub, -EVAL_COST_CREDITS, `Edge URL Evaluation: ${targetUrl}`, Math.floor(Date.now() / 1000)).run();
+          await env.DB.prepare(
+            "INSERT INTO credit_ledger (user_id, amount_cents, balance_after_cents, transaction_type, reference_id, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+          ).bind(claims.sub, -EVAL_COST_CREDITS, newBalance, "EDGE_EVALUATION", targetUrl, Math.floor(Date.now() / 1000)).run();
         } catch(e) {}
+
 
         return jsonResponse({
           success: true,
