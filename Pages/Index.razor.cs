@@ -21,6 +21,7 @@ namespace Personalization.Pages
         private bool isSyncing = false;
         private bool isEvaluating = false;
         
+        private string activeTab = "overview";
         private string errorMessage = string.Empty;
         private string successMessage = string.Empty;
         private string syncMessage = string.Empty;
@@ -202,6 +203,21 @@ namespace Personalization.Pages
             finally
             {
                 isLoadingCreditHistory = false;
+            }
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                try
+                {
+                    await JS.InvokeVoidAsync("initMeshCanvas");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Mesh canvas init warning: {ex.Message}");
+                }
             }
         }
 

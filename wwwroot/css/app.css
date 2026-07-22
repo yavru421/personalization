@@ -1,103 +1,85 @@
 :root {
-    --bg-darker: #0d1117;
-    --bg-panel: #161b22;
-    --border-dim: #30363d;
-    --brand-accent: #238636;
-    --brand-accent-hover: #2ea043;
-    --text-white: #c9d1d9;
-    --text-dark-muted: #8b949e;
-    --glass-bg: rgba(22, 27, 34, 0.7);
+    --bg-darker: #07090e;
+    --bg-panel: rgba(15, 21, 32, 0.7);
+    --border-dim: rgba(255, 255, 255, 0.08);
+    --brand-accent: #00f0ff;
+    --brand-accent-hover: #00c8ff;
+    --neon-cyan: hsl(186, 100%, 50%);
+    --neon-purple: hsl(268, 100%, 65%);
+    --neon-pink: hsl(330, 100%, 65%);
+    --neon-green: hsl(150, 100%, 50%);
+    --neon-gold: hsl(42, 100%, 55%);
+    --text-white: #f0f4f8;
+    --text-dark-muted: #94a3b8;
+    --glass-bg: rgba(13, 18, 28, 0.65);
+    --glass-card-border: rgba(255, 255, 255, 0.12);
 }
 
 body, html {
     background-color: var(--bg-darker);
     color: var(--text-white);
     margin: 0;
-    font-family: system-ui, -apple-system, sans-serif;
-    height: 100vh;
-    overflow: hidden;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
 }
 
-#app {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-}
-
-#blazor-error-ui {
-    display: none;
-}
-
-.app-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    width: 100vw;
+/* Mesh Gradient Background Effect */
+.dashboard-wrapper {
     position: relative;
-    overflow: hidden;
+    min-height: 100vh;
+    background: radial-gradient(circle at 20% 20%, rgba(0, 240, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+                #07090e;
+    background-attachment: fixed;
 }
 
-/* Splash / Home Screen */
-.home-screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background: var(--bg-darker);
-    position: relative;
-    animation: fadeIn 0.8s ease-out;
-}
-
-.brand-title {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin: 0;
-    letter-spacing: -1px;
-}
-
-.brand-title .accent {
-    color: var(--brand-accent);
-}
-
-.brand-subtitle {
-    color: var(--text-dark-muted);
-    font-size: 1.1rem;
-    margin-top: 8px;
-    margin-bottom: 40px;
-}
-
-.fab-new-doc {
-    background: var(--brand-accent);
-    color: white;
-    border: none;
-    border-radius: 50px;
-    padding: 16px 32px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    box-shadow: 0 4px 14px rgba(35, 134, 54, 0.4);
-    cursor: pointer;
-    transition: transform 0.2s, background 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.fab-new-doc:active {
-    transform: scale(0.96);
-    background: var(--brand-accent-hover);
-}
-
-.branding-footer {
+.glass-bg-glow {
     position: absolute;
-    bottom: 30px;
-    font-size: 0.8rem;
-    color: var(--text-dark-muted);
-    opacity: 0.6;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80vw;
+    height: 400px;
+    background: radial-gradient(ellipse at center, rgba(0, 240, 255, 0.15), transparent 70%);
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-card-border);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-card:hover {
+    border-color: rgba(0, 240, 255, 0.3);
+    box-shadow: 0 16px 48px rgba(0, 240, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-cyan {
+    background: linear-gradient(135deg, hsl(186, 100%, 45%), hsl(210, 100%, 55%));
+    color: #07090e;
+    font-weight: 700;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 240, 255, 0.35);
+    transition: all 0.25s ease;
+}
+
+.btn-cyan:hover {
+    background: linear-gradient(135deg, hsl(186, 100%, 50%), hsl(210, 100%, 60%));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0, 240, 255, 0.5);
+    color: #000;
+}
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }

@@ -4,11 +4,13 @@
 
 <div class="dashboard-wrapper">
     <div class="glass-bg-glow"></div>
-    <div class="container-fluid py-4 px-md-5">
-        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom-glass">
+    <canvas id="mesh-background-canvas" class="position-fixed top-0 start-0 w-100 h-100 pe-none" style="z-index: 0; opacity: 0.35;"></canvas>
+    
+    <div class="container-fluid py-4 px-md-5 position-relative" style="z-index: 1;">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom-glass">
             <div class="brand-header animate-fade-in">
-                <span class="badge bg-glass-neon text-cyan text-uppercase tracking-wide mb-1 px-3 py-1.5 rounded-pill font-mono">Dondlinger Tech Platform</span>
-                <h1 class="display-6 font-weight-bold text-white mb-0">Universal <span class="text-cyan">Identity & Personalization</span></h1>
+                <span class="badge bg-glass-neon text-cyan text-uppercase tracking-wide mb-1 px-3 py-1.5 rounded-pill font-mono">Dondlinger SaaS Engine</span>
+                <h1 class="display-6 font-weight-bold text-white mb-0">Personalization <span class="text-cyan">Control Panel</span></h1>
             </div>
             
             <div class="d-flex align-items-center gap-3">
@@ -105,238 +107,257 @@
         }
         else
         {
-            <!-- Authenticated Dashboard -->
+            <!-- Interactive Glass Tab Navigation Bar -->
+            <div class="d-flex gap-2 mb-4 border-bottom-glass pb-3 animate-fade-in">
+                <button class="btn btn-sm @(activeTab == "overview" ? "btn-cyan" : "btn-outline-info border-glass text-muted-cyan") rounded-pill px-4 font-mono text-xs d-flex align-items-center gap-2" @onclick='() => activeTab = "overview"'>
+                    <span>📊 Overview & Ledger</span>
+                </button>
+                <button class="btn btn-sm @(activeTab == "vault" ? "btn-cyan" : "btn-outline-info border-glass text-muted-cyan") rounded-pill px-4 font-mono text-xs d-flex align-items-center gap-2" @onclick='() => activeTab = "vault"'>
+                    <span>🔐 Key Vault & Sync</span>
+                </button>
+                <button class="btn btn-sm @(activeTab == "edge" ? "btn-cyan" : "btn-outline-info border-glass text-muted-cyan") rounded-pill px-4 font-mono text-xs d-flex align-items-center gap-2" @onclick='() => activeTab = "edge"'>
+                    <span>⚡ Edge Evaluator</span>
+                </button>
+            </div>
+
+            <!-- Authenticated Dashboard Tabbed Views -->
             <div class="row g-4 animate-scale-in">
-                <!-- User Profile & API Token Integration Card -->
-                <div class="col-12 col-lg-5">
-                    <div class="d-flex flex-column gap-4">
-                        <!-- Profile Metadata -->
-                        <div class="glass-card shadow-glass p-4">
-                            <h3 class="h5 text-white mb-3 d-flex align-items-center gap-2">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                Sync Profile
-                            </h3>
-                            
-                            <div class="profile-grid font-mono">
-                                <div class="profile-label text-muted-cyan">ACCOUNT:</div>
-                                <div class="profile-value text-white text-truncate">@userProfile.Email</div>
-                                
-                                <div class="profile-label text-muted-cyan">TIER:</div>
-                                <div class="profile-value">
-                                    <span class="badge bg-cyan text-dark rounded-pill font-sans">@userProfile.Tier</span>
-                                </div>
-                                
-                                <div class="profile-label text-muted-cyan">STATUS:</div>
-                                <div class="profile-value @(isZlaMode ? "text-warning" : "text-green")">
-                                    @(isZlaMode ? "Zero Liability Mode" : "Authenticated & Online")
-                                </div>
-                                
-                                <div class="profile-label text-muted-cyan">CREDITS:</div>
-                                <div class="profile-value text-cyan">@userProfile.Credits.ToString("N0") units</div>
-                            </div>
-                        </div>
-
-                        <!-- Credit History & Audit Trail Card -->
-                        <div class="glass-card shadow-glass p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h3 class="h5 text-white mb-0 d-flex align-items-center gap-2">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    Credit History & Audit Trail
+                @if (activeTab == "overview" || activeTab == "vault")
+                {
+                    <!-- User Profile & Credit Ledger Card -->
+                    <div class="col-12 @(activeTab == "overview" ? "col-lg-12" : "col-lg-5")">
+                        <div class="d-flex flex-column gap-4">
+                            <!-- Profile Metadata -->
+                            <div class="glass-card shadow-glass p-4">
+                                <h3 class="h5 text-white mb-3 d-flex align-items-center gap-2">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    Sync Profile
                                 </h3>
-                                <button class="btn btn-xs btn-outline-info border-glass rounded-pill px-2 py-0.5 text-xs font-mono" @onclick="LoadCreditHistory" disabled="@isLoadingCreditHistory">
-                                    @if (isLoadingCreditHistory)
-                                    {
-                                        <span class="spinner-border spinner-border-xs" role="status" aria-hidden="true"></span>
-                                    }
-                                    else
-                                    {
-                                        <span>Refresh ↻</span>
-                                    }
-                                </button>
-                            </div>
-
-                            @if (isLoadingCreditHistory)
-                            {
-                                <div class="text-center py-3 text-muted-cyan font-mono text-xs">
-                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                    Loading transaction audit log...
-                                </div>
-                            }
-                            else if (creditHistory == null || creditHistory.Count == 0)
-                            {
-                                <div class="text-muted-cyan text-xs py-3 italic font-sans text-center border-glass-dashed rounded">
-                                    No credit transactions recorded yet.
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="credit-ledger-list d-flex flex-column gap-2 font-mono text-xs" style="max-height: 250px; overflow-y: auto;">
-                                    @foreach (var tx in creditHistory)
-                                    {
-                                        <div class="p-2 rounded border-glass d-flex justify-content-between align-items-center bg-glass-dark">
-                                            <div class="d-flex flex-column me-2 text-truncate">
-                                                <span class="text-white text-truncate font-sans fw-bold">@tx.Description</span>
-                                                <span class="text-muted-cyan text-xs">@FormatTimestamp(tx.Created_at)</span>
-                                            </div>
-                                            <div class="fw-bold @(tx.Amount_cents >= 0 ? "text-green" : "text-danger-glass") text-nowrap">
-                                                @(tx.Amount_cents >= 0 ? $"+{tx.Amount_cents}" : tx.Amount_cents.ToString())
-                                            </div>
-                                        </div>
-                                    }
-                                </div>
-                            }
-                        </div>
-
-
-                    </div>
-                </div>
-
-                <!-- Sync Settings Editor Card -->
-                <div class="col-12 col-lg-7">
-                    <div class="glass-card shadow-glass p-4 h-100 d-flex flex-direction-column">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h3 class="h5 text-white mb-0 d-flex align-items-center gap-2">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-                                Sync Settings
-                            </h3>
-                            
-                            <!-- ZLA Mode Selector Toggle -->
-                            <div class="form-check form-switch zla-switch font-mono text-xs d-flex align-items-center gap-2">
-                                <input class="form-check-input" type="checkbox" role="switch" id="zlaToggle" @bind="isZlaMode" @bind:after="OnZlaModeChanged" />
-                                <label class="form-check-label text-warning" for="zlaToggle">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>ZLA Mode
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="settings-sync-status mb-4 p-3 rounded border-glass d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-2 text-xs font-mono">
-                                <span class="sync-status-icon @(isZlaMode ? "zla" : isSyncPending ? "pending" : "synced")"></span>
-                                <span class="text-muted-cyan">
-                                    @(isZlaMode ? "State: Zero Custody local storage" : isSyncPending ? "State: Changes pending cloud sync" : $"State: Synchronized with database (D1)")
-                                </span>
-                            </div>
-                            @if (!isZlaMode && isSyncPending)
-                            {
-                                <button class="btn btn-xs btn-cyan rounded-pill font-mono px-3" @onclick="ForceSettingsSync" disabled="@isSyncing">
-                                    @if (isSyncing)
-                                    {
-                                        <span class="spinner-border spinner-border-xs" role="status" aria-hidden="true"></span>
-                                    }
-                                    else
-                                    {
-                                        <span>Sync Now</span>
-                                    }
-                                </button>
-                            }
-                        </div>
-
-                        <div class="row g-3 flex-grow-1">
-                            <!-- Theme Selection -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-muted-cyan font-mono text-xs">VISUAL THEME</label>
-                                <select class="form-select select-glass" @bind="userSettings.Theme" @bind:after="OnSettingsChanged">
-                                    <option value="dark">Vibrant Cyber Dark</option>
-                                    <option value="light">Frosted Glass Light</option>
-                                    <option value="dracula">Neon Vampire Dracula</option>
-                                </select>
-                            </div>
-
-                            <!-- Unit preference -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-muted-cyan font-mono text-xs">MEASUREMENT UNIT</label>
-                                <select class="form-select select-glass" @bind="userSettings.Unit" @bind:after="OnSettingsChanged">
-                                    <option value="metric">Metric (°C, m/s)</option>
-                                    <option value="imperial">Imperial (°F, mph)</option>
-                                </select>
-                            </div>
-
-                            <!-- Configured Locations -->
-                            <div class="col-12">
-                                <label class="form-label text-muted-cyan font-mono text-xs d-flex justify-content-between">
-                                    <span>MONITORED REGIONS</span>
-                                    <span class="text-cyan">@userSettings.Locations.Count / 5</span>
-                                </label>
                                 
-                                <div class="d-flex gap-2 mb-3">
-                                    <input type="text" class="form-control input-glass" placeholder="Add location (e.g. Paris, FR)..." @bind="newLocationInput" @onkeyup="HandleLocationKeyup" />
-                                    <button class="btn btn-cyan px-3" @onclick="AddLocation">Add</button>
+                                <div class="profile-grid font-mono">
+                                    <div class="profile-label text-muted-cyan">ACCOUNT:</div>
+                                    <div class="profile-value text-white text-truncate">@userProfile.Email</div>
+                                    
+                                    <div class="profile-label text-muted-cyan">TIER:</div>
+                                    <div class="profile-value">
+                                        <span class="badge bg-cyan text-dark rounded-pill font-sans">@userProfile.Tier</span>
+                                    </div>
+                                    
+                                    <div class="profile-label text-muted-cyan">STATUS:</div>
+                                    <div class="profile-value @(isZlaMode ? "text-warning" : "text-green")">
+                                        @(isZlaMode ? "Zero Liability Mode" : "Authenticated & Online")
+                                    </div>
+                                    
+                                    <div class="profile-label text-muted-cyan">CREDITS:</div>
+                                    <div class="profile-value text-cyan">@userProfile.Credits.ToString("N0") units</div>
                                 </div>
+                            </div>
 
-                                <div class="locations-chip-list">
-                                    @if (userSettings.Locations == null || userSettings.Locations.Count == 0)
-                                    {
-                                        <div class="text-muted-cyan text-sm py-2 italic font-sans text-center border-glass-dashed rounded">
-                                            No tracking locations configured. Please add a city.
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        @foreach (var loc in userSettings.Locations)
+                            <!-- Credit History & Audit Trail Card -->
+                            <div class="glass-card shadow-glass p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="h5 text-white mb-0 d-flex align-items-center gap-2">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        Credit History & Audit Trail
+                                    </h3>
+                                    <button class="btn btn-xs btn-outline-info border-glass rounded-pill px-2 py-0.5 text-xs font-mono" @onclick="LoadCreditHistory" disabled="@isLoadingCreditHistory">
+                                        @if (isLoadingCreditHistory)
                                         {
-                                            <span class="location-chip d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill font-mono text-xs text-white">
-                                                <span>@loc</span>
-                                                <button type="button" class="btn-remove-chip" @onclick="() => RemoveLocation(loc)">&times;</button>
-                                            </span>
+                                            <span class="spinner-border spinner-border-xs" role="status" aria-hidden="true"></span>
                                         }
-                                    }
+                                        else
+                                        {
+                                            <span>Refresh ↻</span>
+                                        }
+                                    </button>
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Sync Status Message Toast / Banner -->
-                        @if (!string.IsNullOrEmpty(syncMessage))
-                        {
-                            <div class="mt-3 alert alert-success-glass py-2 px-3 text-sm font-mono text-center">
-                                @syncMessage
-                            </div>
-                        }
-                    </div>
-                </div>
-
-                <!-- Edge Stateless Inference Router: URL Evaluator Panel -->
-                <div class="col-12 mt-4">
-                    <div class="glass-card shadow-glass p-4">
-                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom-glass pb-2">
-                            <div>
-                                <span class="badge bg-glass-neon text-cyan text-uppercase font-mono text-xs px-2.5 py-1 rounded-pill">Edge Router Feature</span>
-                                <h3 class="h5 text-white mb-0 mt-1">Stateless URL Evaluation Router</h3>
-                            </div>
-                            <span class="text-xs text-muted-cyan font-mono">Model: Llama 3.3 70B Fast Edge</span>
-                        </div>
-
-                        <p class="text-muted-cyan text-sm">Paste any public URL below to trigger an edge-native AI architectural and UX evaluation via Cloudflare Workers AI.</p>
-
-                        <div class="d-flex gap-2 mb-3">
-                            <input type="url" class="form-control input-glass font-mono text-sm" placeholder="https://wazweather.dondlingergc.com" @bind="evalTargetUrl" />
-                            <button class="btn btn-cyan px-4 font-mono text-xs d-flex align-items-center gap-2" @onclick="RunEdgeEvaluation" disabled="@isEvaluating">
-                                @if (isEvaluating)
+                                @if (isLoadingCreditHistory)
                                 {
-                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                    <span>Evaluating...</span>
+                                    <div class="text-center py-3 text-muted-cyan font-mono text-xs">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Loading transaction audit log...
+                                    </div>
+                                }
+                                else if (creditHistory == null || creditHistory.Count == 0)
+                                {
+                                    <div class="text-muted-cyan text-xs py-3 italic font-sans text-center border-glass-dashed rounded">
+                                        No credit transactions recorded yet.
+                                    </div>
                                 }
                                 else
                                 {
-                                    <span>Run Edge Eval ⚡</span>
+                                    <div class="credit-ledger-list d-flex flex-column gap-2 font-mono text-xs" style="max-height: 250px; overflow-y: auto;">
+                                        @foreach (var tx in creditHistory)
+                                        {
+                                            <div class="p-2 rounded border-glass d-flex justify-content-between align-items-center bg-glass-dark">
+                                                <div class="d-flex flex-column me-2 text-truncate">
+                                                    <span class="text-white text-truncate font-sans fw-bold">@tx.Description</span>
+                                                    <span class="text-muted-cyan text-xs">@FormatTimestamp(tx.Created_at)</span>
+                                                </div>
+                                                <div class="fw-bold @(tx.Amount_cents >= 0 ? "text-green" : "text-danger-glass") text-nowrap">
+                                                    @(tx.Amount_cents >= 0 ? $"+{tx.Amount_cents}" : tx.Amount_cents.ToString())
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
                                 }
-                            </button>
+                            </div>
                         </div>
-
-                        @if (!string.IsNullOrEmpty(evalError))
-                        {
-                            <div class="alert alert-danger-glass text-xs font-mono mb-3">
-                                @evalError
-                            </div>
-                        }
-
-                        @if (!string.IsNullOrEmpty(evalResult))
-                        {
-                            <div class="eval-result-card p-3 rounded bg-glass-dark border-glass font-mono text-xs text-cyan-light mt-2" style="white-space: pre-wrap; max-height: 400px; overflow-y: auto;">
-                                @evalResult
-                            </div>
-                        }
                     </div>
-                </div>
+                }
+
+                @if (activeTab == "vault")
+                {
+                    <!-- Sync Settings Editor Card -->
+                    <div class="col-12 col-lg-7">
+                        <div class="glass-card shadow-glass p-4 h-100 d-flex flex-direction-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h3 class="h5 text-white mb-0 d-flex align-items-center gap-2">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                                    Sync Settings & Vault
+                                </h3>
+                                
+                                <!-- ZLA Mode Selector Toggle -->
+                                <div class="form-check form-switch zla-switch font-mono text-xs d-flex align-items-center gap-2">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="zlaToggle" @bind="isZlaMode" @bind:after="OnZlaModeChanged" />
+                                    <label class="form-check-label text-warning" for="zlaToggle">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>ZLA Mode
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="settings-sync-status mb-4 p-3 rounded border-glass d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2 text-xs font-mono">
+                                    <span class="sync-status-icon @(isZlaMode ? "zla" : isSyncPending ? "pending" : "synced")"></span>
+                                    <span class="text-muted-cyan">
+                                        @(isZlaMode ? "State: Zero Custody local storage" : isSyncPending ? "State: Changes pending cloud sync" : $"State: Synchronized with database (D1)")
+                                    </span>
+                                </div>
+                                @if (!isZlaMode && isSyncPending)
+                                {
+                                    <button class="btn btn-xs btn-cyan rounded-pill font-mono px-3" @onclick="ForceSettingsSync" disabled="@isSyncing">
+                                        @if (isSyncing)
+                                        {
+                                            <span class="spinner-border spinner-border-xs" role="status" aria-hidden="true"></span>
+                                        }
+                                        else
+                                        {
+                                            <span>Sync Now</span>
+                                        }
+                                    </button>
+                                }
+                            </div>
+
+                            <div class="row g-3 flex-grow-1">
+                                <!-- Theme Selection -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-muted-cyan font-mono text-xs">VISUAL THEME</label>
+                                    <select class="form-select select-glass" @bind="userSettings.Theme" @bind:after="OnSettingsChanged">
+                                        <option value="dark">Vibrant Cyber Dark</option>
+                                        <option value="light">Frosted Glass Light</option>
+                                        <option value="dracula">Neon Vampire Dracula</option>
+                                    </select>
+                                </div>
+
+                                <!-- Unit preference -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-muted-cyan font-mono text-xs">MEASUREMENT UNIT</label>
+                                    <select class="form-select select-glass" @bind="userSettings.Unit" @bind:after="OnSettingsChanged">
+                                        <option value="metric">Metric (°C, m/s)</option>
+                                        <option value="imperial">Imperial (°F, mph)</option>
+                                    </select>
+                                </div>
+
+                                <!-- Configured Locations -->
+                                <div class="col-12">
+                                    <label class="form-label text-muted-cyan font-mono text-xs d-flex justify-content-between">
+                                        <span>MONITORED REGIONS</span>
+                                        <span class="text-cyan">@userSettings.Locations.Count / 5</span>
+                                    </label>
+                                    
+                                    <div class="d-flex gap-2 mb-3">
+                                        <input type="text" class="form-control input-glass" placeholder="Add location (e.g. Paris, FR)..." @bind="newLocationInput" @onkeyup="HandleLocationKeyup" />
+                                        <button class="btn btn-cyan px-3" @onclick="AddLocation">Add</button>
+                                    </div>
+
+                                    <div class="locations-chip-list">
+                                        @if (userSettings.Locations == null || userSettings.Locations.Count == 0)
+                                        {
+                                            <div class="text-muted-cyan text-sm py-2 italic font-sans text-center border-glass-dashed rounded">
+                                                No tracking locations configured. Please add a city.
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var loc in userSettings.Locations)
+                                            {
+                                                <span class="location-chip d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill font-mono text-xs text-white">
+                                                    <span>@loc</span>
+                                                    <button type="button" class="btn-remove-chip" @onclick="() => RemoveLocation(loc)">&times;</button>
+                                                </span>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(syncMessage))
+                            {
+                                <div class="mt-3 alert alert-success-glass py-2 px-3 text-sm font-mono text-center">
+                                    @syncMessage
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @if (activeTab == "edge" || activeTab == "overview")
+                {
+                    <!-- Edge Stateless Inference Router: URL Evaluator Panel -->
+                    <div class="col-12">
+                        <div class="glass-card shadow-glass p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom-glass pb-2">
+                                <div>
+                                    <span class="badge bg-glass-neon text-cyan text-uppercase font-mono text-xs px-2.5 py-1 rounded-pill">Edge Router Feature</span>
+                                    <h3 class="h5 text-white mb-0 mt-1">Stateless URL Evaluation Router</h3>
+                                </div>
+                                <span class="text-xs text-muted-cyan font-mono">Model: Llama 3.3 70B Fast Edge</span>
+                            </div>
+
+                            <p class="text-muted-cyan text-sm">Paste any public URL below to trigger an edge-native AI architectural and UX evaluation via Cloudflare Workers AI.</p>
+
+                            <div class="d-flex gap-2 mb-3">
+                                <input type="url" class="form-control input-glass font-mono text-sm" placeholder="https://wazweather.dondlingergc.com" @bind="evalTargetUrl" />
+                                <button class="btn btn-cyan px-4 font-mono text-xs d-flex align-items-center gap-2" @onclick="RunEdgeEvaluation" disabled="@isEvaluating">
+                                    @if (isEvaluating)
+                                    {
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                        <span>Evaluating...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Run Edge Eval ⚡</span>
+                                    }
+                                </button>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(evalError))
+                            {
+                                <div class="alert alert-danger-glass text-xs font-mono mb-3">
+                                    @evalError
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(evalResult))
+                            {
+                                <div class="eval-result-card p-3 rounded bg-glass-dark border-glass font-mono text-xs text-cyan-light mt-2" style="white-space: pre-wrap; max-height: 400px; overflow-y: auto;">
+                                    @evalResult
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
             </div>
         }
     </div>
