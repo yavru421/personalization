@@ -25,6 +25,43 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
+    // Helper: Rate Limiter via Cloudflare KV (IDENTITY_CACHE)
+    const clientIp = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "127.0.0.1";
+    const checkRateLimit = async (endpointType, maxRequests, windowSeconds = 60) => {
+      if (!env.IDENTITY_CACHE) return true;
+      const minuteWindow = Math.floor(Date.now() / (windowSeconds * 1000));
+      const key = `ratelimit:${endpointType}:${clientIp}:${minuteWindow}`;
+      const currentCountStr = await env.IDENTITY_CACHE.get(key);
+      const currentCount = currentCountStr ? parseInt(currentCountStr, 10) : 0;
+      if (currentCount >= maxRequests) {
+        return false;
+      }
+      ctx.waitUntil(env.IDENTITY_CACHE.put(key, (currentCount + 1).toString(), { expirationTtl: 120 }));
+      return true;
+    };
+
+    // Apply Rate Limits on sensitive endpoints
+    const sensitiveAuthRoutes = ["/api/auth/login", "/api/auth/register"];
+    if (sensitiveAuthRoutes.includes(url.pathname)) {
+      const allowed = await checkRateLimit("auth", 10, 60);
+      if (!allowed) {
+        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please wait 60 seconds." }), {
+          status: 429,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      }
+    }
+
+    if (url.pathname === "/api/eval") {
+      const allowed = await checkRateLimit("eval", 5, 60);
+      if (!allowed) {
+        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please wait 60 seconds." }), {
+          status: 429,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      }
+    }
+
     // Helper: JSON response
     const jsonResponse = (data, status = 200, customHeaders = {}) => {
       const headers = new Headers({
