@@ -105,4 +105,29 @@ Added a Manage Cloud Settings Sync button in WaZWeather Settings dialog linking 
   - Committed & Pushed changes to `yavru421/wazweather` (`b562b82`).
 - **Status**: Fully resolved across both repositories (`personalization` and `wazweather`).
 
+## 2026-07-22 06:10:00
+
+- **Role**: Antigravity Developer
+- **Action**: Performed `/web-perf`, `/wrangler`, and `/cloudflare-one` auditing across both applications.
+- **Details**:
+  - `personalization`: Updated `wwwroot/_headers` to allow `https://*.dondlingergc.com` under `Content-Security-Policy: connect-src`. Verified Brotli & 1-year immutable caching for `/_framework/*` and `/*.wasm`. Pushed commit `e9ffcc1`.
+  - `wazweather`: Updated `Pages/Personalization.razor` to attach `BrowserRequestCredentials.Include` on cross-origin sync fetches to `https://personalization.dondlingergc.com/api/settings` while preserving ZLA zero-custody local storage fallback. Pushed commit `1cef560`.
+  - Edge verification: Both endpoints verified active with HTTP 200 OK responses.
+- **Status**: Completed audit and deployment sync successfully.
+
+## 2026-07-22 06:18:00
+
+- **Role**: Antigravity Developer
+- **Action**: Fully resolved the 4 mechanical PWA, D1 binding, and DOM injection gaps.
+- **Details**:
+  1. **PWA SW Navigation Cache Bypass**: Updated `sw.js` fetch handler to enforce a Network-First strategy for navigation HTML requests (`mode === 'navigate'`). Bypasses SW cache for `index.html` on online state so Cloudflare Workers `HTMLRewriter` always fires.
+  2. **Cross-Project D1 Binding**: Added `[[d1_databases]]` binding `IDENTITY_DB` (`1128e99a-70e1-458c-b0b7-d548a10a5533`) to `wazweather/wrangler.toml` for zero-latency direct identity queries.
+  3. **Zero-Custody Offline Fallback**: Configured `Personalization.razor` to check `window.__USER_SETTINGS__` on boot, gracefully falling back to `localStorage` / `IndexedDB` when offline.
+  4. **DOM Overwrite Protection**: Updated `SettingsInjector` in `worker.js` to append `<script id="__EDGE_STATE__">` into `<head>` instead of body DOM elements, preventing Blazor WASM from destroying edge state during mount.
+  - Verified `dotnet build` succeeded with 0 errors.
+  - Pushed commit `f1ca01f` to `yavru421/wazweather`.
+- **Status**: Fully resolved and deployed across both repositories.
+
+
+
 

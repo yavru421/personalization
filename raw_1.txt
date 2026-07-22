@@ -1,0 +1,187 @@
+# personalization/worker.js
+import { JWT } from 'jsonwebtoken';
+import { crypto } from 'crypto';
+import { D1Client } from '@d1-io/d1-client';
+
+const jwtSecret = 'your_jwt_secret';
+const d1Id = '1128e99a-70e1-458c-b0b7-d548a10a5533';
+const d1Client = new D1Client(d1Id);
+
+addEventListener('fetch', async (event) => {
+  const request = event.request;
+  const url = new URL(request.url);
+  const pathname = url.pathname;
+
+  if (pathname === '/api/register') {
+    const { username, password, email } = await request.json();
+    const hashedPassword = crypto.pbkdf2Sync(password, 'salt', 100000, 64, 'sha256');
+    const user = { username, password: hashedPassword.toString('hex'), email };
+    const response = await d1Client.post('/users', user);
+    const token = JWT.sign({ userId: response.userId }, jwtSecret, { algorithm: 'HS256' });
+    event.respondWith(
+      new Response(JSON.stringify({ token }), {
+        headers: {
+          'Set-Cookie': `dgc-session=${token}; Domain=.dondlingergc.com; Secure; HttpOnly`,
+        },
+      })
+    );
+  } else if (pathname === '/api/login') {
+    const { username, password } = await request.json();
+    const hashedPassword = crypto.pbkdf2Sync(password, 'salt', 100000, 64, 'sha256');
+    const response = await d1Client.post('/users/login', { username, password: hashedPassword.toString('hex') });
+    const token = JWT.sign({ userId: response.userId }, jwtSecret, { algorithm: 'HS256' });
+    event.respondWith(
+      new Response(JSON.stringify({ token }), {
+        headers: {
+          'Set-Cookie': `dgc-session=${token}; Domain=.dondlingergc.com; Secure; HttpOnly`,
+        },
+      })
+    );
+  } else if (pathname === '/api/logout') {
+    event.respondWith(
+      new Response(null, {
+        headers: {
+          'Set-Cookie': 'dgc-session=; Domain=.dondlingergc.com; Secure; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
+        },
+      })
+    );
+  } else if (pathname === '/api/session') {
+    const cookie = request.headers.get('Cookie');
+    const token = cookie.match(/dgc-session=([^;]*)/)[1];
+    try {
+      const decoded = JWT.verify(token, jwtSecret);
+      event.respondWith(new Response(JSON.stringify({ userId: decoded.userId })));
+    } catch (error) {
+      event.respondWith(new Response(null, { status: 401 }));
+    }
+  }
+});
+
+# wazweather/worker.js
+import { HTMLRewriter } from 'html-rewriter';
+
+const jwtSecret = 'your_jwt_secret';
+
+addEventListener('fetch', async (event) => {
+  const request = event.request;
+  const url = new URL(request.url);
+  const pathname = url.pathname;
+
+  if (pathname.startsWith('/api/premium/')) {
+    const cookie = request.headers.get('Cookie');
+    const token = cookie.match(/dgc-session=([^;]*)/)[1];
+    try {
+      const decoded = JWT.verify(token, jwtSecret);
+      if (decoded.tier !== 'Premium' && decoded.tier !== 'Enterprise') {
+        event.respondWith(new Response(null, { status: 401 }));
+      } else {
+        event.respondWith(await fetch(request));
+      }
+    } catch (error) {
+      event.respondWith(new Response(null, { status: 401 }));
+    }
+  } else {
+    const rewriter = new HTMLRewriter();
+    rewriter.on('head', {
+      handler: (element) => {
+        const cookie = request.headers.get('Cookie');
+        const token = cookie.match(/dgc-session=([^;]*)/)[1];
+        try {
+          const decoded = JWT.verify(token, jwtSecret);
+          element.append(
+            `<script>window.__DGC_USER__ = { isAuthenticated: true, tier: '${decoded.tier}', email: '${decoded.email}' };</script>`,
+            { html: true }
+          );
+        } catch (error) {
+          element.append(
+            `<script>window.__DGC_USER__ = { isAuthenticated: false, tier: null, email: null };</script>`,
+            { html: true }
+          );
+        }
+      },
+    });
+    event.respondWith(rewriter.transform(await fetch(request)));
+  }
+});
+
+# wazweather/wrangler.toml
+[env]
+JWT_SECRET = "your_jwt_secret"
+
+[d1]
+binding = "IDENTITY_DB"
+id = "1128e99a-70e1-458c-b0b7-d548a10a5533"
+
+# wazweather/Pages/Index.razor
+@inject IJSRuntime jsRuntime
+
+@if (!User.isAuthenticated)
+{
+  <div>
+    <i class="lock icon"></i>
+    <a href="https://personalization.dondlingergc.com">Unlock with DGC Account</a>
+  </div>
+}
+
+@code {
+  private User User = new User();
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (firstRender)
+    {
+      await jsRuntime.InvokeVoidAsync("readUser");
+      StateHasChanged();
+    }
+  }
+
+  [JSInvokable]
+  public void ReadUser(User user)
+  {
+    User = user;
+  }
+}
+
+public class User
+{
+  public bool isAuthenticated { get; set; }
+  public string tier { get; set; }
+  public string email { get; set; }
+}
+
+# wazweather/wwwroot/sw.js
+importScripts('workbox-sw.js');
+
+if (workbox) {
+  workbox.routing.registerRoute(
+    new RegExp('.*\\.html'),
+    new workbox.strategies.NetworkFirst({
+      cacheName: 'html-cache',
+    })
+  );
+
+  workbox.routing.registerRoute(
+    new RegExp('.*\\.(js|css|png|jpg|jpeg|gif|bmp|ico)$'),
+    new workbox.strategies.CacheFirst({
+      cacheName: 'asset-cache',
+    })
+  );
+} else {
+  console.log('Workbox is not loaded');
+}
+
+# PowerShell gate commands
+dotnet build personalization
+dotnet build wazweather
+
+$cookie = New-Object System.Net.Cookie
+$cookie.Name = "dgc-session"
+$cookie.Domain = ".dondlingergc.com"
+$cookie.Secure = $true
+$cookie.HttpOnly = $true
+
+Invoke-WebRequest -Uri "https://personalization.dondlingergc.com/api/session" -Cookie $cookie
+
+git add .
+git commit -m "Update personalization and wazweather"
+git push origin main
