@@ -82,3 +82,27 @@ Added a Manage Cloud Settings Sync button in WaZWeather Settings dialog linking 
   - CI/CD & Build (`build.sh`, `package.json`): Cloudflare native CI running `bash build.sh` with .NET 10.0 SDK.
   - Git repository: `https://github.com/yavru421/personalization.git` (branch `main`).
 - **Status**: Completed audit.
+
+## 2026-07-22 06:02:00
+
+- **Role**: Antigravity Developer
+- **Action**: Resolved Cross-Domain SSO & Inter-App Navigation Fix.
+- **Details**:
+  - `Pages/Index.razor`: Updated header navigation link button to `Go to WaZWeather ⟶`.
+  - `worker.js`: Updated CORS helper to dynamically match `https://wazweather.dondlingergc.com` and `.dondlingergc.com` origins while retaining `Access-Control-Allow-Credentials: true`. Verified `Set-Cookie` contains `Domain=.dondlingergc.com; Path=/; Secure; HttpOnly; SameSite=Lax`.
+  - Verified `dotnet build` succeeded with 0 warnings and 0 errors (`is_compiled` = TRUE).
+  - Validated cookie domain configuration (`is_cookie_domain_valid` = TRUE).
+  - Staged, committed, and pushed changes to `main` origin (`is_git_pushed` = TRUE).
+- **Status**: Completed successfully.
+
+## 2026-07-22 06:06:00
+
+- **Role**: Antigravity Developer
+- **Action**: Fixed blank `/personalization` page routing in `wazweather` repository.
+- **Details**:
+  - `wazweather/worker.js`: Updated route interceptor to include `/personalization` and fetch `/index.html` from Workers Assets when `/personalization` is requested, enabling client-side Blazor SPA mounting and `HTMLRewriter` state injection.
+  - Verified `dotnet build` in `c:\dev\wazweather` succeeded with 0 errors/warnings.
+  - Committed & Pushed changes to `yavru421/wazweather` (`b562b82`).
+- **Status**: Fully resolved across both repositories (`personalization` and `wazweather`).
+
+
