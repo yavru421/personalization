@@ -325,7 +325,37 @@ export default {
       }
     }
 
+    if (url.pathname === "/api/auth/me" && request.method === "GET") {
+      const claims = await authenticate(request);
+      if (!claims) {
+        return jsonResponse({ error: "Unauthorized" }, 401);
+      }
+      try {
+        const user = await env.DB.prepare(
+          "SELECT id, email, subscription_tier, subscription_status, credit_balance_cents FROM users WHERE id = ?"
+        ).bind(claims.sub).first();
+
+        if (!user) {
+          return jsonResponse({ error: "User not found" }, 404);
+        }
+
+        return jsonResponse({
+          success: true,
+          user: {
+            id: user.id,
+            email: user.email,
+            subscription_tier: user.subscription_tier || "free",
+            subscription_status: user.subscription_status || "active",
+            credit_balance_cents: user.credit_balance_cents || 0,
+          }
+        });
+      } catch (err) {
+        return jsonResponse({ error: err.message || "Failed to fetch user profile" }, 500);
+      }
+    }
+
     if (url.pathname === "/api/auth/logout" && request.method === "POST") {
+
       try {
         let refresh_token = null;
         try {

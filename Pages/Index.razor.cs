@@ -105,7 +105,6 @@ namespace Personalization.Pages
 
         protected override async Task OnInitializedAsync()
         {
-            // Try checking for ZLA settings locally first
             try
             {
                 var zlaEnabledStr = await JS.InvokeAsync<string>("localStorage.getItem", "wazweather_zla_enabled");
@@ -115,23 +114,46 @@ namespace Personalization.Pages
                 if (!string.IsNullOrEmpty(localToken))
                 {
                     jwtToken = localToken;
-                    isLoggedIn = true;
-                    
-                    var email = await JS.InvokeAsync<string>("localStorage.getItem", "wazweather_email") ?? "user@example.com";
-                    var storedCreditsStr = await JS.InvokeAsync<string>("localStorage.getItem", "wazweather_credits");
-                    int storedCredits = 1000;
-                    if (!string.IsNullOrEmpty(storedCreditsStr) && int.TryParse(storedCreditsStr, out int parsedCredits))
+                }
+
+                // Fetch real-time user profile from D1 via /api/auth/me
+                try
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Get, "/api/auth/me");
+                    request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+                    if (!string.IsNullOrEmpty(jwtToken))
                     {
-                        storedCredits = parsedCredits;
+                        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwtToken);
                     }
 
-                    userProfile = new UserProfile
+                    var response = await Http.SendAsync(request);
+                    if (response.IsSuccessStatusCode)
                     {
-                        Email = email,
-                        Tier = "Active Account",
-                        Credits = storedCredits
-                    };
+                        var meData = await response.Content.ReadFromJsonAsync<AuthResponse>();
+                        if (meData != null && meData.User != null)
+                        {
+                            isLoggedIn = true;
+                            userProfile = new UserProfile
+                            {
+                                Email = meData.User.Email,
+                                Tier = meData.User.Subscription_tier,
+                                Credits = meData.User.Credit_balance_cents
+                            };
 
+                            await JS.InvokeVoidAsync("localStorage.setItem", "wazweather_email", meData.User.Email);
+                            await JS.InvokeVoidAsync("localStorage.setItem", "wazweather_credits", meData.User.Credit_balance_cents.ToString());
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Profile fetch error: {ex.Message}");
+                    if (!string.IsNullOrEmpty(jwtToken))
+                    {
+                        isLoggedIn = true;
+                        var email = await JS.InvokeAsync<string>("localStorage.getItem", "wazweather_email") ?? "user@example.com";
+                        userProfile = new UserProfile { Email = email, Tier = "Active Account", Credits = 1000 };
+                    }
                 }
 
                 await LoadSettings();
@@ -141,6 +163,7 @@ namespace Personalization.Pages
                 Console.WriteLine($"Initialization Error: {ex.Message}");
             }
         }
+
 
         private void ToggleAuthMode()
         {
