@@ -118,12 +118,20 @@ namespace Personalization.Pages
                     isLoggedIn = true;
                     
                     var email = await JS.InvokeAsync<string>("localStorage.getItem", "wazweather_email") ?? "user@example.com";
+                    var storedCreditsStr = await JS.InvokeAsync<string>("localStorage.getItem", "wazweather_credits");
+                    int storedCredits = 1000;
+                    if (!string.IsNullOrEmpty(storedCreditsStr) && int.TryParse(storedCreditsStr, out int parsedCredits))
+                    {
+                        storedCredits = parsedCredits;
+                    }
+
                     userProfile = new UserProfile
                     {
                         Email = email,
-                        Tier = "Premium Plus",
-                        Credits = 2500
+                        Tier = "Active Account",
+                        Credits = storedCredits
                     };
+
                 }
 
                 await LoadSettings();
@@ -186,18 +194,24 @@ namespace Personalization.Pages
                         jwtToken = result.Token;
                         isLoggedIn = true;
                         
+                        var credits = result.User != null ? result.User.Credit_balance_cents : result.CreditBalanceCents;
+                        var email = result.User != null ? result.User.Email : (result.Email ?? authModel.Email);
+                        var tier = result.User != null ? result.User.Subscription_tier : result.Tier;
+
                         userProfile = new UserProfile
                         {
-                            Email = result.Email,
-                            Tier = result.Tier,
-                            Credits = result.Credits
+                            Email = email,
+                            Tier = tier,
+                            Credits = credits
                         };
 
                         // Store state locally
                         await JS.InvokeVoidAsync("localStorage.setItem", "wazweather_jwt", jwtToken);
-                        await JS.InvokeVoidAsync("localStorage.setItem", "wazweather_email", result.Email);
+                        await JS.InvokeVoidAsync("localStorage.setItem", "wazweather_email", email);
+                        await JS.InvokeVoidAsync("localStorage.setItem", "wazweather_credits", credits.ToString());
                         
                         successMessage = isRegisterMode ? "Registration successful! Loading dashboard..." : "Login successful!";
+
                         await LoadSettings();
                     }
                     else
@@ -514,6 +528,17 @@ namespace Personalization.Pages
         public string Token { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Tier { get; set; } = "Free Tier";
-        public int Credits { get; set; }
+        public int CreditBalanceCents { get; set; }
+        public AuthUserDto User { get; set; }
     }
+
+    public class AuthUserDto
+    {
+        public string Id { get; set; }
+        public string Email { get; set; }
+        public string Subscription_tier { get; set; }
+        public string Subscription_status { get; set; }
+        public int Credit_balance_cents { get; set; }
+    }
+
 }
