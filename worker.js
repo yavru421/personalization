@@ -384,6 +384,11 @@ export default {
             "INSERT INTO user_settings (user_id, settings_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET settings_json = excluded.settings_json, updated_at = excluded.updated_at"
           ).bind(claims.sub, settingsStr, now).run();
 
+          // Sync to Cloudflare KV Edge Cache
+          if (env.IDENTITY_CACHE) {
+            ctx.waitUntil(env.IDENTITY_CACHE.put(`settings:${claims.sub}`, settingsStr));
+          }
+
           return jsonResponse({ success: true });
         } catch (err) {
           return jsonResponse({ error: err.message || "Failed to save settings" }, 500);
@@ -391,7 +396,45 @@ export default {
       }
     }
 
-    // Fallback: Static Assets
-    return env.ASSETS.fetch(request);
+    // Fallback: Static Assets with Edge HTMLRewriter Injection
+    const assetResponse = await env.ASSETS.fetch(request);
+    const contentType = assetResponse.headers.get("content-type") || "";
+
+    if (contentType.includes("text/html")) {
+      const claims = await authenticate(request);
+      let sessionData = claims ? { id: claims.sub, email: claims.email, tier: claims.subscription_tier || "free" } : null;
+      let settingsData = {};
+
+      if (claims && env.IDENTITY_CACHE) {
+        const cachedSettings = await env.IDENTITY_CACHE.get(`settings:${claims.sub}`);
+        if (cachedSettings) {
+          try { settingsData = JSON.parse(cachedSettings); } catch(e) {}
+        } else {
+          try {
+            const dbSettings = await env.DB.prepare("SELECT settings_json FROM user_settings WHERE user_id = ?").bind(claims.sub).first();
+            if (dbSettings) {
+              settingsData = JSON.parse(dbSettings.settings_json);
+              ctx.waitUntil(env.IDENTITY_CACHE.put(`settings:${claims.sub}`, dbSettings.settings_json));
+            }
+          } catch(e) {}
+        }
+      }
+
+      const injectionScript = `<script>
+        window.__USER_SESSION__ = ${JSON.stringify(sessionData)};
+        window.__USER_SETTINGS__ = ${JSON.stringify(settingsData)};
+      </script>`;
+
+      return new HTMLRewriter()
+        .on("head", {
+          element(el) {
+            el.append(injectionScript, { html: true });
+          }
+        })
+        .transform(assetResponse);
+    }
+
+    return assetResponse;
   },
 };
+
