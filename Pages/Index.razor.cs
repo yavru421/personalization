@@ -181,8 +181,9 @@ namespace Personalization.Pages
                             Token = GenerateSimulatedJwt(authModel.Email),
                             Email = authModel.Email,
                             Tier = "Developer Tier",
-                            Credits = 5000
+                            CreditBalanceCents = 5000
                         })
+
                     };
                 }
 
