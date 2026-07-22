@@ -242,7 +242,52 @@
                         }
                     </div>
                 </div>
+
+                <!-- Edge Stateless Inference Router: URL Evaluator Panel -->
+                <div class="col-12 mt-4">
+                    <div class="glass-card shadow-glass p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom-glass pb-2">
+                            <div>
+                                <span class="badge bg-glass-neon text-cyan text-uppercase font-mono text-xs px-2.5 py-1 rounded-pill">Edge Router Feature</span>
+                                <h3 class="h5 text-white mb-0 mt-1">Stateless URL Evaluation Router</h3>
+                            </div>
+                            <span class="text-xs text-muted-cyan font-mono">Model: Llama 3.3 70B Fast Edge</span>
+                        </div>
+
+                        <p class="text-muted-cyan text-sm">Paste any public URL below to trigger an edge-native AI architectural and UX evaluation via Cloudflare Workers AI.</p>
+
+                        <div class="d-flex gap-2 mb-3">
+                            <input type="url" class="form-control input-glass font-mono text-sm" placeholder="https://wazweather.dondlingergc.com" @bind="evalTargetUrl" />
+                            <button class="btn btn-cyan px-4 font-mono text-xs d-flex align-items-center gap-2" @onclick="RunEdgeEvaluation" disabled="@isEvaluating">
+                                @if (isEvaluating)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span>Evaluating...</span>
+                                }
+                                else
+                                {
+                                    <span>Run Edge Eval ⚡</span>
+                                }
+                            </button>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(evalError))
+                        {
+                            <div class="alert alert-danger-glass text-xs font-mono mb-3">
+                                @evalError
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(evalResult))
+                        {
+                            <div class="eval-result-card p-3 rounded bg-glass-dark border-glass font-mono text-xs text-cyan-light mt-2" style="white-space: pre-wrap; max-height: 400px; overflow-y: auto;">
+                                @evalResult
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
         }
     </div>
+
 </div>

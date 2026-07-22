@@ -19,6 +19,7 @@ namespace Personalization.Pages
         private bool isZlaMode = false;
         private bool isSyncPending = false;
         private bool isSyncing = false;
+        private bool isEvaluating = false;
         
         private string errorMessage = string.Empty;
         private string successMessage = string.Empty;
@@ -26,9 +27,73 @@ namespace Personalization.Pages
         private string newLocationInput = string.Empty;
         private string jwtToken = string.Empty;
 
+        private string evalTargetUrl = "https://wazweather.dondlingergc.com";
+        private string evalResult = string.Empty;
+        private string evalError = string.Empty;
+
         private AuthModel authModel = new AuthModel();
         private UserProfile userProfile = new UserProfile();
         private UserSettings userSettings = new UserSettings();
+
+        private async Task RunEdgeEvaluation()
+        {
+            if (string.IsNullOrWhiteSpace(evalTargetUrl))
+            {
+                evalError = "Please enter a valid target URL.";
+                return;
+            }
+
+            isEvaluating = true;
+            evalError = string.Empty;
+            evalResult = string.Empty;
+
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, "/api/eval");
+                request.Content = JsonContent.Create(new { targetUrl = evalTargetUrl });
+                request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+
+                if (!string.IsNullOrEmpty(jwtToken))
+                {
+                    request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwtToken);
+                }
+
+                var response = await Http.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<EvalApiResponse>();
+                    evalResult = result?.Evaluation ?? "Evaluation returned empty result.";
+                }
+                else
+                {
+                    var err = await response.Content.ReadFromJsonAsync<ErrorApiResponse>();
+                    evalError = err?.Error ?? $"Evaluation request failed ({response.StatusCode}).";
+                }
+            }
+            catch (Exception ex)
+            {
+                evalError = $"Edge Evaluation Error: {ex.Message}";
+            }
+            finally
+            {
+                isEvaluating = false;
+            }
+        }
+
+        public class EvalApiResponse
+        {
+            public bool Success { get; set; }
+            public string TargetUrl { get; set; }
+            public string Evaluation { get; set; }
+            public string Timestamp { get; set; }
+            public string EvaluatedBy { get; set; }
+        }
+
+        public class ErrorApiResponse
+        {
+            public string Error { get; set; }
+        }
+
 
         protected override async Task OnInitializedAsync()
         {

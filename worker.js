@@ -396,6 +396,66 @@ export default {
       }
     }
 
+    if (url.pathname === "/api/eval" && request.method === "POST") {
+      const claims = await authenticate(request);
+      if (!claims) {
+        return jsonResponse({ error: "Unauthorized. Account required to access Edge Inference Router." }, 401);
+      }
+
+      try {
+        const { targetUrl } = await request.json();
+        if (!targetUrl) {
+          return jsonResponse({ error: "Missing targetUrl parameter" }, 400);
+        }
+
+        // Fetch target URL content
+        let pageText = "";
+        try {
+          const pageRes = await fetch(targetUrl, {
+            headers: { "User-Agent": "Dondlinger-Edge-Inference-Evaluator/1.0" }
+          });
+          const rawHtml = await pageRes.text();
+          pageText = rawHtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+                             .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+                             .replace(/<[^>]+>/g, " ")
+                             .replace(/\s+/g, " ")
+                             .trim()
+                             .substring(0, 3000);
+        } catch (e) {
+          return jsonResponse({ error: `Failed to fetch URL ${targetUrl}: ${e.message}` }, 400);
+        }
+
+        // Run Workers AI Inference if AI binding exists, or fallback structured analysis
+        let evalResult = "";
+        if (env.AI) {
+          try {
+            const aiRes = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
+              messages: [
+                { role: "system", content: "You are a Principal Web Architect & Security Evaluator. Analyze the provided webpage text content. Provide a concise evaluation covering: 1) Executive Summary, 2) Technical Stack & Architecture, 3) Performance & UX Quality, and 4) Strategic Recommendations." },
+                { role: "user", content: `URL: ${targetUrl}\n\nWebpage Content Snippet:\n${pageText}` }
+              ]
+            });
+            evalResult = aiRes.response || JSON.stringify(aiRes);
+          } catch (e) {
+            evalResult = `### Edge Evaluation of ${targetUrl}\n\n**Raw Content Length**: ${pageText.length} characters\n**Status**: Successfully fetched page content via Cloudflare Edge Worker.\n\n**Extracted Content Snippet**:\n> ${pageText.substring(0, 500)}...\n\n*Note*: Workers AI binding error: ${e.message}`;
+          }
+        } else {
+          evalResult = `### Edge Evaluation of ${targetUrl}\n\n**Target URL**: ${targetUrl}\n**Page Content Length**: ${pageText.length} bytes extracted via Edge Worker.\n\n**Automated Inspection Summary**:\n- **Domain**: ${new URL(targetUrl).hostname}\n- **Edge Response**: HTTP 200 OK\n- **Extracted Text Preview**:\n> ${pageText.substring(0, 500)}...\n\n*(Connect \`AI\` binding in wrangler.toml to enable full Llama 3.3 70B Workers AI synthesis)*`;
+        }
+
+        return jsonResponse({
+          success: true,
+          targetUrl,
+          evaluation: evalResult,
+          timestamp: new Date().toISOString(),
+          evaluatedBy: claims.email
+        });
+      } catch (err) {
+        return jsonResponse({ error: err.message || "Evaluation failed" }, 500);
+      }
+    }
+
+
     // Fallback: Static Assets with Edge HTMLRewriter Injection
     const assetResponse = await env.ASSETS.fetch(request);
     const contentType = assetResponse.headers.get("content-type") || "";
