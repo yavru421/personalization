@@ -334,11 +334,11 @@ export default {
     }
 
     if (url.pathname === "/api/auth/me" && request.method === "GET") {
-      const claims = await authenticate(request);
-      if (!claims) {
-        return jsonResponse({ error: "Unauthorized" }, 401);
-      }
       try {
+        const claims = await authenticate(request);
+        if (!claims) {
+          return jsonResponse({ error: "Unauthorized" }, 401);
+        }
         const user = await env.DB.prepare(
           "SELECT id, email, subscription_tier, subscription_status, credit_balance_cents FROM users WHERE id = ?"
         ).bind(claims.sub).first();
@@ -358,9 +358,10 @@ export default {
           }
         });
       } catch (err) {
-        return jsonResponse({ error: err.message || "Failed to fetch user profile" }, 500);
+        return jsonResponse({ error: err.stack || err.message || "Failed to fetch user profile" }, 500);
       }
     }
+
 
     if (url.pathname === "/api/auth/logout" && request.method === "POST") {
 
