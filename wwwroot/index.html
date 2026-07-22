@@ -49,7 +49,14 @@
         <button id="ios-pwa-prompt-close-btn" style="background: #007aff; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold;">Got it</button>
     </div>
 
-    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js" autostart="false"></script>
+    <script>
+      Blazor.start({
+        loadBootResource: function (type, name, defaultUri, integrity) {
+          return defaultUri;
+        }
+      });
+    </script>
     <script src="js/pwa-helper.js"></script>
     <script src="js/zla-interop.js"></script>
 </body>
