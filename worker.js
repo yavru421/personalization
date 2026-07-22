@@ -3,8 +3,19 @@ export default {
     const url = new URL(request.url);
 
     // CORS Headers helper
+    const origin = request.headers.get("Origin");
+    const allowedOrigins = [
+      "https://personalization.dondlingergc.com",
+      "https://wazweather.dondlingergc.com",
+      "http://localhost:5000",
+      "https://localhost:5001"
+    ];
+    const corsOrigin = (origin && (allowedOrigins.includes(origin) || origin.endsWith(".dondlingergc.com")))
+      ? origin
+      : "https://wazweather.dondlingergc.com";
+
     const corsHeaders = {
-      "Access-Control-Allow-Origin": request.headers.get("Origin") || "*",
+      "Access-Control-Allow-Origin": corsOrigin,
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
       "Access-Control-Allow-Credentials": "true",
