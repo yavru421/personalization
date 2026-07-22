@@ -362,6 +362,25 @@ export default {
       }
     }
 
+    if (url.pathname === "/api/credits/history" && request.method === "GET") {
+      try {
+        const claims = await authenticate(request);
+        if (!claims) {
+          return jsonResponse({ error: "Unauthorized" }, 401);
+        }
+        const { results } = await env.DB.prepare(
+          "SELECT id, amount_cents, description, created_at FROM credit_ledger WHERE user_id = ? ORDER BY created_at DESC LIMIT 20"
+        ).bind(claims.sub).all();
+
+        return jsonResponse({
+          success: true,
+          history: results || []
+        });
+      } catch (err) {
+        return jsonResponse({ error: err.message || "Failed to fetch credit history" }, 500);
+      }
+    }
+
 
     if (url.pathname === "/api/auth/logout" && request.method === "POST") {
 

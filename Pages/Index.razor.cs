@@ -157,10 +157,65 @@ namespace Personalization.Pages
                 }
 
                 await LoadSettings();
+                if (isLoggedIn)
+                {
+                    await LoadCreditHistory();
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Initialization Error: {ex.Message}");
+            }
+        }
+
+        private bool isLoadingCreditHistory = false;
+        private List<LedgerTransactionDto> creditHistory = new List<LedgerTransactionDto>();
+
+        private async Task LoadCreditHistory()
+        {
+            if (!isLoggedIn) return;
+
+            isLoadingCreditHistory = true;
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, "/api/credits/history");
+                request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+                if (!string.IsNullOrEmpty(jwtToken))
+                {
+                    request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwtToken);
+                }
+
+                var response = await Http.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<CreditHistoryResponse>();
+                    if (result != null && result.History != null)
+                    {
+                        creditHistory = result.History;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Credit history load error: {ex.Message}");
+            }
+            finally
+            {
+                isLoadingCreditHistory = false;
+            }
+        }
+
+        private string FormatTimestamp(long unixTimestamp)
+        {
+            if (unixTimestamp <= 0) return string.Empty;
+            try
+            {
+                var dateTime = DateTimeOffset.FromUnixTimeSeconds(unixTimestamp).LocalDateTime;
+                return dateTime.ToString("yyyy-MM-dd HH:mm:ss");
+            }
+            catch
+            {
+                return unixTimestamp.ToString();
             }
         }
 
@@ -563,6 +618,20 @@ namespace Personalization.Pages
         public string Subscription_tier { get; set; }
         public string Subscription_status { get; set; }
         public int Credit_balance_cents { get; set; }
+    }
+
+    public class CreditHistoryResponse
+    {
+        public bool Success { get; set; }
+        public List<LedgerTransactionDto> History { get; set; } = new List<LedgerTransactionDto>();
+    }
+
+    public class LedgerTransactionDto
+    {
+        public string Id { get; set; }
+        public int Amount_cents { get; set; }
+        public string Description { get; set; }
+        public long Created_at { get; set; }
     }
 
 }

@@ -136,6 +136,57 @@
                             </div>
                         </div>
 
+                        <!-- Credit History & Audit Trail Card -->
+                        <div class="glass-card shadow-glass p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h3 class="h5 text-white mb-0 d-flex align-items-center gap-2">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    Credit History & Audit Trail
+                                </h3>
+                                <button class="btn btn-xs btn-outline-info border-glass rounded-pill px-2 py-0.5 text-xs font-mono" @onclick="LoadCreditHistory" disabled="@isLoadingCreditHistory">
+                                    @if (isLoadingCreditHistory)
+                                    {
+                                        <span class="spinner-border spinner-border-xs" role="status" aria-hidden="true"></span>
+                                    }
+                                    else
+                                    {
+                                        <span>Refresh ↻</span>
+                                    }
+                                </button>
+                            </div>
+
+                            @if (isLoadingCreditHistory)
+                            {
+                                <div class="text-center py-3 text-muted-cyan font-mono text-xs">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    Loading transaction audit log...
+                                </div>
+                            }
+                            else if (creditHistory == null || creditHistory.Count == 0)
+                            {
+                                <div class="text-muted-cyan text-xs py-3 italic font-sans text-center border-glass-dashed rounded">
+                                    No credit transactions recorded yet.
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="credit-ledger-list d-flex flex-column gap-2 font-mono text-xs" style="max-height: 250px; overflow-y: auto;">
+                                    @foreach (var tx in creditHistory)
+                                    {
+                                        <div class="p-2 rounded border-glass d-flex justify-content-between align-items-center bg-glass-dark">
+                                            <div class="d-flex flex-column me-2 text-truncate">
+                                                <span class="text-white text-truncate font-sans fw-bold">@tx.Description</span>
+                                                <span class="text-muted-cyan text-xs">@FormatTimestamp(tx.Created_at)</span>
+                                            </div>
+                                            <div class="fw-bold @(tx.Amount_cents >= 0 ? "text-green" : "text-danger-glass") text-nowrap">
+                                                @(tx.Amount_cents >= 0 ? $"+{tx.Amount_cents}" : tx.Amount_cents.ToString())
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+
 
                     </div>
                 </div>
