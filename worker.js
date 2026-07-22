@@ -402,6 +402,15 @@ export default {
         return jsonResponse({ error: "Unauthorized. Account required to access Edge Inference Router." }, 401);
       }
 
+      // Check user credit balance in D1
+      const EVAL_COST_CREDITS = 50;
+      const user = await env.DB.prepare("SELECT credit_balance_cents FROM users WHERE id = ?").bind(claims.sub).first();
+      const currentCredits = user ? (user.credit_balance_cents || 0) : 0;
+
+      if (currentCredits < EVAL_COST_CREDITS) {
+        return jsonResponse({ error: `Insufficient credits. Edge evaluation requires ${EVAL_COST_CREDITS} units. Current balance: ${currentCredits} units.` }, 402);
+      }
+
       try {
         const { targetUrl } = await request.json();
         if (!targetUrl) {
@@ -443,17 +452,29 @@ export default {
           evalResult = `### Edge Evaluation of ${targetUrl}\n\n**Target URL**: ${targetUrl}\n**Page Content Length**: ${pageText.length} bytes extracted via Edge Worker.\n\n**Automated Inspection Summary**:\n- **Domain**: ${new URL(targetUrl).hostname}\n- **Edge Response**: HTTP 200 OK\n- **Extracted Text Preview**:\n> ${pageText.substring(0, 500)}...\n\n*(Connect \`AI\` binding in wrangler.toml to enable full Llama 3.3 70B Workers AI synthesis)*`;
         }
 
+        // Deduct credits & record transaction
+        const newBalance = currentCredits - EVAL_COST_CREDITS;
+        await env.DB.prepare("UPDATE users SET credit_balance_cents = ? WHERE id = ?").bind(newBalance, claims.sub).run();
+        
+        try {
+          const ledgerId = crypto.randomUUID();
+          await env.DB.prepare("INSERT INTO credit_ledger (id, user_id, amount_cents, description, created_at) VALUES (?, ?, ?, ?, ?)").bind(ledgerId, claims.sub, -EVAL_COST_CREDITS, `Edge URL Evaluation: ${targetUrl}`, Math.floor(Date.now() / 1000)).run();
+        } catch(e) {}
+
         return jsonResponse({
           success: true,
           targetUrl,
           evaluation: evalResult,
           timestamp: new Date().toISOString(),
-          evaluatedBy: claims.email
+          evaluatedBy: claims.email,
+          creditsDeducted: EVAL_COST_CREDITS,
+          remainingCredits: newBalance
         });
       } catch (err) {
         return jsonResponse({ error: err.message || "Evaluation failed" }, 500);
       }
     }
+
 
 
     // Fallback: Static Assets with Edge HTMLRewriter Injection

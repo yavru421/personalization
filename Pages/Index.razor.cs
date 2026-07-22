@@ -63,6 +63,11 @@ namespace Personalization.Pages
                 {
                     var result = await response.Content.ReadFromJsonAsync<EvalApiResponse>();
                     evalResult = result?.Evaluation ?? "Evaluation returned empty result.";
+                    if (result != null && result.RemainingCredits >= 0)
+                    {
+                        userProfile.Credits = result.RemainingCredits;
+                        await JS.InvokeVoidAsync("localStorage.setItem", "wazweather_credits", result.RemainingCredits.ToString());
+                    }
                 }
                 else
                 {
@@ -87,7 +92,10 @@ namespace Personalization.Pages
             public string Evaluation { get; set; }
             public string Timestamp { get; set; }
             public string EvaluatedBy { get; set; }
+            public int CreditsDeducted { get; set; }
+            public int RemainingCredits { get; set; }
         }
+
 
         public class ErrorApiResponse
         {
