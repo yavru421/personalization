@@ -42,7 +42,15 @@ export default {
 
     // Helper: Base64 decoding/encoding
     const bufferToBase64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
-    const base64ToBuffer = (str) => Uint8Array.from(atob(str), c => c.charCodeAt(0));
+    const base64ToBuffer = (str) => {
+      const binaryStr = atob(str);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+      return bytes;
+    };
+
 
     // Helper: Cryptographic hashing using PBKDF2
     const hashPassword = async (password, saltBuffer = null) => {
