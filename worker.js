@@ -412,10 +412,10 @@ export default {
         return jsonResponse({
           success: true,
           history: (results || []).map(r => ({
-            id: r.id,
-            amount_cents: r.amount_cents,
-            description: r.transaction_type + (r.reference_id ? `: ${r.reference_id}` : ''),
-            created_at: r.created_at
+            id: r.id != null ? String(r.id) : "",
+            amount_cents: Number(r.amount_cents || 0),
+            description: String(r.transaction_type || '') + (r.reference_id ? `: ${r.reference_id}` : ''),
+            created_at: Number(r.created_at || 0)
           }))
         });
       } catch (err) {
