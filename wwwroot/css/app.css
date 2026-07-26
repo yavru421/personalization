@@ -20,8 +20,9 @@ body, html {
     color: var(--text-white);
     margin: 0;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
 }
@@ -30,30 +31,33 @@ body, html {
 .app-layout {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    padding-bottom: 70px; /* Space for bottom mobile nav */
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
 }
 
-@media (min-width: 768px) {
+@media (max-width: 767px) {
     .app-layout {
-        padding-bottom: 0;
+        padding-bottom: 60px; /* Space for bottom mobile nav */
     }
 }
 
 .app-header-bar {
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 100;
-    background: rgba(7, 9, 14, 0.85);
+    height: 52px;
+    background: rgba(7, 9, 14, 0.92);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border-dim);
+    flex-shrink: 0;
 }
 
 .header-container {
-    max-width: 1400px;
+    max-width: 1600px;
+    height: 100%;
     margin: 0 auto;
-    padding: 12px 20px;
+    padding: 0 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -178,12 +182,16 @@ body, html {
 /* Mesh Gradient Background Effect */
 .dashboard-wrapper {
     position: relative;
-    min-height: 100vh;
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
     background: radial-gradient(circle at 20% 20%, rgba(0, 240, 255, 0.08) 0%, transparent 40%),
                 radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
                 radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
                 #07090e;
-    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
 }
 
 .glass-bg-glow {

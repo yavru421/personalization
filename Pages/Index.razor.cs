@@ -387,20 +387,26 @@ namespace Personalization.Pages
                 try
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, "/api/settings");
-                    request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwtToken);
+                    if (!string.IsNullOrEmpty(jwtToken))
+                    {
+                        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwtToken);
+                    }
                     request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
                     var response = await Http.SendAsync(request);
                     if (response.IsSuccessStatusCode)
                     {
-                        var settings = await response.Content.ReadFromJsonAsync<UserSettings>();
-                        if (settings != null)
+                        var wrapper = await response.Content.ReadFromJsonAsync<SettingsResponseWrapper>();
+                        if (wrapper != null && wrapper.Settings != null)
                         {
-                            userSettings = settings;
+                            userSettings = wrapper.Settings;
+                        }
+                        else
+                        {
+                            userSettings = GetDefaultSettings();
                         }
                     }
                     else
                     {
-                        // Load fallback
                         userSettings = GetDefaultSettings();
                     }
                 }
@@ -413,6 +419,11 @@ namespace Personalization.Pages
             {
                 userSettings = GetDefaultSettings();
             }
+
+            if (userSettings == null) userSettings = GetDefaultSettings();
+            if (userSettings.Locations == null) userSettings.Locations = new List<string> { "Wichita, KS", "Dallas, TX" };
+            if (string.IsNullOrEmpty(userSettings.Theme)) userSettings.Theme = "dark";
+            if (string.IsNullOrEmpty(userSettings.Unit)) userSettings.Unit = "imperial";
 
             isSyncPending = false;
         }
@@ -452,8 +463,11 @@ namespace Personalization.Pages
             try
             {
                 var request = new HttpRequestMessage(HttpMethod.Post, "/api/settings");
-                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwtToken);
-                request.Content = JsonContent.Create(userSettings);
+                if (!string.IsNullOrEmpty(jwtToken))
+                {
+                    request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwtToken);
+                }
+                request.Content = JsonContent.Create(new { settings = userSettings });
                 request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
                 
                 var response = await Http.SendAsync(request);
@@ -589,6 +603,32 @@ namespace Personalization.Pages
             var signature = "SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
             return $"{header}.{payload}.{signature}";
         }
+
+        private async Task ApplyTeammatePreset(string name)
+        {
+            if (name == "John")
+            {
+                userSettings.Theme = "dark";
+                userSettings.Unit = "imperial";
+                userSettings.Locations = new List<string> { "Wichita, KS", "Dallas, TX", "Denver, CO" };
+                ShowStatusMessage("Applied John's Operator Preset (Cyber Dark & Imperial)");
+            }
+            else if (name == "Jace")
+            {
+                userSettings.Theme = "dracula";
+                userSettings.Unit = "imperial";
+                userSettings.Locations = new List<string> { "Wichita, KS", "Eagle Construction Site" };
+                ShowStatusMessage("Applied Jace's Legacy Preset (Neon Dracula & Precision)");
+            }
+            else if (name == "Chris")
+            {
+                userSettings.Theme = "dark";
+                userSettings.Unit = "metric";
+                userSettings.Locations = new List<string> { "Snaptempo Hub", "Wichita, KS", "Austin, TX" };
+                ShowStatusMessage("Applied Chris's Trade Roots Preset (Emerald Cyber & Metric)");
+            }
+            await SaveSettings();
+        }
     }
 
     public class AuthModel
@@ -614,6 +654,11 @@ namespace Personalization.Pages
         public string Theme { get; set; } = "dark";
         public string Unit { get; set; } = "metric";
         public List<string> Locations { get; set; } = new List<string>();
+    }
+
+    public class SettingsResponseWrapper
+    {
+        public UserSettings Settings { get; set; } = new UserSettings();
     }
 
     public class AuthResponse
