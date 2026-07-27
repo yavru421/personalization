@@ -237,9 +237,6 @@ body, html {
     box-shadow: 0 6px 24px rgba(0, 240, 255, 0.5);
     color: #000;
 }
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-}
 
 /* Editor Workspace */
 .editor-workspace {
