@@ -126,6 +126,10 @@ body, html {
 
 .app-main-viewport {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 52px);
+    overflow: hidden;
 }
 
 /* Mobile Touch-Optimized Bottom Navigation Bar */
@@ -236,6 +240,232 @@ body, html {
     transform: translateY(-2px);
     box-shadow: 0 6px 24px rgba(0, 240, 255, 0.5);
     color: #000;
+}
+
+/* Glassmorphism & UI Component Utilities */
+.shadow-glass {
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.border-bottom-glass {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.border-glass {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.border-glass-dashed {
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+}
+
+.bg-glass-dark {
+    background: rgba(7, 10, 18, 0.65);
+    backdrop-filter: blur(12px);
+}
+
+.bg-glass-neon {
+    background: rgba(0, 240, 255, 0.12);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+}
+
+.status-indicator-pill {
+    background: rgba(13, 18, 28, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-dot.status-online {
+    background: #00ffaa;
+    box-shadow: 0 0 8px #00ffaa;
+}
+
+.status-dot.status-zla {
+    background: #ffb700;
+    box-shadow: 0 0 8px #ffb700;
+}
+
+.status-dot.status-offline {
+    background: #ff4d4d;
+    box-shadow: 0 0 8px #ff4d4d;
+}
+
+.text-muted-cyan {
+    color: #7dd3fc;
+    opacity: 0.85;
+}
+
+.text-cyan {
+    color: #00f0ff !important;
+}
+
+.text-cyan-light {
+    color: #bae6fd;
+}
+
+.text-green {
+    color: #34d399 !important;
+}
+
+.text-danger-glass {
+    color: #f87171 !important;
+}
+
+.text-xs {
+    font-size: 0.75rem !important;
+}
+
+.text-xxs {
+    font-size: 0.68rem !important;
+}
+
+.font-mono {
+    font-family: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+
+.btn-xs {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.75rem;
+    border-radius: 20px;
+}
+
+.btn-outline-info {
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.3);
+    background: rgba(56, 189, 248, 0.05);
+}
+
+.btn-outline-info:hover {
+    color: #fff;
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+}
+
+.btn-outline-danger {
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.3);
+    background: rgba(248, 113, 113, 0.05);
+}
+
+.btn-outline-danger:hover {
+    color: #fff;
+    background: rgba(248, 113, 113, 0.25);
+    border-color: #f87171;
+}
+
+.btn-glow {
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+}
+
+.btn-glow:hover {
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.7);
+}
+
+.input-glass-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-glass-group .input-icon {
+    position: absolute;
+    left: 12px;
+    z-index: 5;
+    font-size: 0.85rem;
+}
+
+.input-glass-group .input-glass {
+    padding-left: 36px;
+}
+
+.input-glass, .select-glass {
+    background: rgba(7, 10, 18, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #f0f4f8 !important;
+    border-radius: 8px;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+}
+
+.input-glass:focus, .select-glass:focus {
+    border-color: #00f0ff !important;
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.3) !important;
+    outline: none;
+}
+
+.input-glass::placeholder {
+    color: #64748b;
+}
+
+.alert-danger-glass {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    border-radius: 8px;
+}
+
+.alert-success-glass {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #6ee7b7;
+    border-radius: 8px;
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 12px;
+    align-items: center;
+}
+
+.location-chip {
+    background: rgba(14, 165, 233, 0.15);
+    border: 1px solid rgba(14, 165, 233, 0.3);
+}
+
+.btn-remove-chip {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0 2px;
+}
+
+.btn-remove-chip:hover {
+    color: #f87171;
+}
+
+.zla-switch .form-check-input {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+}
+
+.zla-switch .form-check-input:checked {
+    background-color: #ffb700;
+    border-color: #ffb700;
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.35s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.animate-shake {
+    animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
 }
 
 /* Editor Workspace */
