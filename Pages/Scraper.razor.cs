@@ -189,10 +189,10 @@ namespace Personalization.Pages
     public class ScrapeApiResponse
     {
         public bool Success { get; set; }
-        public string TargetUrl { get; set; }
-        public string Evaluation { get; set; }
-        public string Timestamp { get; set; }
-        public string EvaluatedBy { get; set; }
+        public string TargetUrl { get; set; } = string.Empty;
+        public string Evaluation { get; set; } = string.Empty;
+        public string Timestamp { get; set; } = string.Empty;
+        public string EvaluatedBy { get; set; } = string.Empty;
         public int CreditsDeducted { get; set; }
         public int RemainingCredits { get; set; }
     }

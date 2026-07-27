@@ -89,18 +89,17 @@ namespace Personalization.Pages
         public class EvalApiResponse
         {
             public bool Success { get; set; }
-            public string TargetUrl { get; set; }
-            public string Evaluation { get; set; }
-            public string Timestamp { get; set; }
-            public string EvaluatedBy { get; set; }
+            public string TargetUrl { get; set; } = string.Empty;
+            public string Evaluation { get; set; } = string.Empty;
+            public string Timestamp { get; set; } = string.Empty;
+            public string EvaluatedBy { get; set; } = string.Empty;
             public int CreditsDeducted { get; set; }
             public int RemainingCredits { get; set; }
         }
 
-
         public class ErrorApiResponse
         {
-            public string Error { get; set; }
+            public string Error { get; set; } = string.Empty;
         }
 
 
@@ -669,15 +668,15 @@ namespace Personalization.Pages
         public string Email { get; set; } = string.Empty;
         public string Tier { get; set; } = "Free Tier";
         public int CreditBalanceCents { get; set; }
-        public AuthUserDto User { get; set; }
+        public AuthUserDto? User { get; set; }
     }
 
     public class AuthUserDto
     {
-        public string Id { get; set; }
-        public string Email { get; set; }
-        public string Subscription_tier { get; set; }
-        public string Subscription_status { get; set; }
+        public string Id { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Subscription_tier { get; set; } = string.Empty;
+        public string Subscription_status { get; set; } = string.Empty;
         public int Credit_balance_cents { get; set; }
     }
 
@@ -689,9 +688,9 @@ namespace Personalization.Pages
 
     public class LedgerTransactionDto
     {
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
         public int Amount_cents { get; set; }
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
         public long Created_at { get; set; }
     }
 
