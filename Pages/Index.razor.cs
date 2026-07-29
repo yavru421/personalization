@@ -568,6 +568,77 @@ namespace Personalization.Pages
             }
         }
 
+        private async Task BuyCredits(int credits)
+        {
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, "/api/credits/buy");
+                request.Content = JsonContent.Create(new { amountCredits = credits });
+                request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+                if (!string.IsNullOrEmpty(jwtToken))
+                {
+                    request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwtToken);
+                }
+
+                var response = await Http.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<BuyCreditsResponse>();
+                    if (result != null && result.Success)
+                    {
+                        userProfile.Credits = result.NewBalance;
+                        await JS.InvokeVoidAsync("localStorage.setItem", "wazweather_credits", result.NewBalance.ToString());
+                        ShowStatusMessage(result.Message);
+                        await LoadCreditHistory();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowStatusMessage($"Purchase failed: {ex.Message}");
+            }
+        }
+
+        private async Task UpgradeTier(string newTier, int bonusCredits)
+        {
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, "/api/credits/buy");
+                request.Content = JsonContent.Create(new { amountCredits = bonusCredits, newTier = newTier });
+                request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+                if (!string.IsNullOrEmpty(jwtToken))
+                {
+                    request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwtToken);
+                }
+
+                var response = await Http.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<BuyCreditsResponse>();
+                    if (result != null && result.Success)
+                    {
+                        userProfile.Credits = result.NewBalance;
+                        userProfile.Tier = result.Tier;
+                        await JS.InvokeVoidAsync("localStorage.setItem", "wazweather_credits", result.NewBalance.ToString());
+                        ShowStatusMessage(result.Message);
+                        await LoadCreditHistory();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowStatusMessage($"Tier upgrade failed: {ex.Message}");
+            }
+        }
+
+        public class BuyCreditsResponse
+        {
+            public bool Success { get; set; }
+            public int NewBalance { get; set; }
+            public string Tier { get; set; } = string.Empty;
+            public string Message { get; set; } = string.Empty;
+        }
+
         private void ShowStatusMessage(string msg)
         {
             syncMessage = msg;
@@ -601,32 +672,6 @@ namespace Personalization.Pages
             )).TrimEnd('=');
             var signature = "SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
             return $"{header}.{payload}.{signature}";
-        }
-
-        private async Task ApplyTeammatePreset(string name)
-        {
-            if (name == "John")
-            {
-                userSettings.Theme = "dark";
-                userSettings.Unit = "imperial";
-                userSettings.Locations = new List<string> { "Wichita, KS", "Dallas, TX", "Denver, CO" };
-                ShowStatusMessage("Applied John's Operator Preset (Cyber Dark & Imperial)");
-            }
-            else if (name == "Jace")
-            {
-                userSettings.Theme = "dracula";
-                userSettings.Unit = "imperial";
-                userSettings.Locations = new List<string> { "Wichita, KS", "Eagle Construction Site" };
-                ShowStatusMessage("Applied Jace's Legacy Preset (Neon Dracula & Precision)");
-            }
-            else if (name == "Chris")
-            {
-                userSettings.Theme = "dark";
-                userSettings.Unit = "metric";
-                userSettings.Locations = new List<string> { "Snaptempo Hub", "Wichita, KS", "Austin, TX" };
-                ShowStatusMessage("Applied Chris's Trade Roots Preset (Emerald Cyber & Metric)");
-            }
-            await SaveSettings();
         }
     }
 

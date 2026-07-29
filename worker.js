@@ -577,6 +577,45 @@ export default {
       }
     }
 
+    if (url.pathname === "/api/credits/buy" && request.method === "POST") {
+      const claims = await authenticate(request);
+      if (!claims) {
+        return jsonResponse({ error: "Unauthorized" }, 401);
+      }
+      try {
+        const { amountCredits, newTier } = await request.json();
+        const creditsToAdd = Number(amountCredits || 0);
+
+        const user = await env.DB.prepare("SELECT credit_balance_cents, subscription_tier FROM users WHERE id = ?").bind(claims.sub).first();
+        if (!user) {
+          return jsonResponse({ error: "User not found" }, 404);
+        }
+
+        const currentCredits = user.credit_balance_cents || 0;
+        const newBalance = currentCredits + creditsToAdd;
+        const updatedTier = newTier || user.subscription_tier || "free";
+
+        await env.DB.prepare("UPDATE users SET credit_balance_cents = ?, subscription_tier = ? WHERE id = ?")
+          .bind(newBalance, updatedTier, claims.sub).run();
+
+        const desc = newTier ? `TIER_UPGRADE: ${newTier.toUpperCase()}` : `CREDIT_REFILL: +${creditsToAdd} units`;
+        try {
+          await env.DB.prepare(
+            "INSERT INTO credit_ledger (user_id, amount_cents, balance_after_cents, transaction_type, reference_id, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+          ).bind(claims.sub, creditsToAdd, newBalance, "PURCHASE", desc, Math.floor(Date.now() / 1000)).run();
+        } catch(e) {}
+
+        return jsonResponse({
+          success: true,
+          newBalance,
+          tier: updatedTier,
+          message: newTier ? `Successfully upgraded to ${updatedTier} tier!` : `Added ${creditsToAdd} credits to your balance.`
+        });
+      } catch (err) {
+        return jsonResponse({ error: err.message || "Credit purchase failed" }, 500);
+      }
+    }
+
 
 
     // Fallback: Static Assets with Edge HTMLRewriter Injection

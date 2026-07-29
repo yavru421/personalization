@@ -23,14 +23,17 @@
             @if (isLoggedIn)
             {
                 <div class="d-flex align-items-center gap-1.5 flex-wrap">
-                    <button class="btn btn-xs @(activeTab == "overview" ? "btn-cyan" : "btn-outline-info border-glass text-muted-cyan") rounded-pill px-3 py-1 font-mono text-xs" @onclick='() => activeTab = "overview"'>
-                        📊 Overview
+                    <button class="btn btn-xs @(activeTab == "services" ? "btn-cyan" : "btn-outline-info border-glass text-muted-cyan") rounded-pill px-3 py-1 font-mono text-xs" @onclick='() => activeTab = "services"'>
+                        🌐 Service Hub
                     </button>
-                    <button class="btn btn-xs @(activeTab == "vault" ? "btn-cyan" : "btn-outline-info border-glass text-muted-cyan") rounded-pill px-3 py-1 font-mono text-xs" @onclick='() => activeTab = "vault"'>
-                        🔐 Vault & Sync
+                    <button class="btn btn-xs @(activeTab == "settings" ? "btn-cyan" : "btn-outline-info border-glass text-muted-cyan") rounded-pill px-3 py-1 font-mono text-xs" @onclick='() => activeTab = "settings"'>
+                        ⚙️ Service Settings & Credentials
+                    </button>
+                    <button class="btn btn-xs @(activeTab == "billing" ? "btn-cyan" : "btn-outline-info border-glass text-muted-cyan") rounded-pill px-3 py-1 font-mono text-xs" @onclick='() => activeTab = "billing"'>
+                        💳 Premium & Credits (@userProfile.Credits.ToString("N0"))
                     </button>
                     <button class="btn btn-xs @(activeTab == "edge" ? "btn-cyan" : "btn-outline-info border-glass text-muted-cyan") rounded-pill px-3 py-1 font-mono text-xs" @onclick='() => activeTab = "edge"'>
-                        ⚡ Edge Router
+                        ⚡ Edge AI Router
                     </button>
                 </div>
             }
@@ -39,12 +42,17 @@
                 <a href="/scraper" class="btn btn-xs btn-cyan border-glass rounded-pill px-2.5 py-1 text-dark text-decoration-none font-mono font-weight-bold text-xs">
                     ⚡ Scraper
                 </a>
-                <a href="https://inspectallamado.dondlingergc.com" target="_blank" class="btn btn-xs btn-outline-info border-glass rounded-pill px-2.5 py-1 text-cyan text-decoration-none text-xs">
-                    Inspect Llamado ↗
-                </a>
-                <a href="https://wazweather.dondlingergc.com" target="_blank" class="btn btn-xs btn-outline-info border-glass rounded-pill px-2.5 py-1 text-cyan text-decoration-none text-xs">
-                    WaZWeather ↗
-                </a>
+                <div class="dropdown d-inline-block">
+                    <button class="btn btn-xs btn-outline-info border-glass rounded-pill px-2.5 py-1 text-cyan text-xs dropdown-toggle" type="button" id="servicesDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        Connected Services ↗
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark bg-glass-dark border-glass shadow-glass text-xs" aria-labelledby="servicesDropdown">
+                        <li><a class="dropdown-menu-item text-white px-3 py-1.5 d-flex align-items-center justify-content-between text-decoration-none" href="https://inspectallamado.dondlingergc.com" target="_blank"><span>Inspect Llamado</span> <span class="badge bg-green text-dark rounded-pill ms-2 text-xxs">Active</span></a></li>
+                        <li><a class="dropdown-menu-item text-white px-3 py-1.5 d-flex align-items-center justify-content-between text-decoration-none" href="https://wazweather.dondlingergc.com" target="_blank"><span>WaZWeather</span> <span class="badge bg-green text-dark rounded-pill ms-2 text-xxs">Active</span></a></li>
+                        <li><hr class="dropdown-divider border-glass my-1"></li>
+                        <li><a class="dropdown-menu-item text-cyan px-3 py-1.5 text-decoration-none font-mono text-xxs" @onclick='() => activeTab = "settings"'>Configure Service Keys →</a></li>
+                    </ul>
+                </div>
                 @if (isLoggedIn)
                 {
                     <button class="btn btn-xs btn-outline-danger border-glass rounded-pill px-2.5 py-1 text-xs" @onclick="Logout">
@@ -127,101 +135,103 @@
         {
             <!-- Authenticated High-Ergonomics Grid Area -->
             <div class="flex-grow-1 overflow-auto animate-scale-in py-1">
-                @if (activeTab == "overview")
+                @if (activeTab == "services" || activeTab == "overview")
                 {
-                    <div class="row g-3 h-100">
-                        <!-- Profile Card -->
-                        <div class="col-12 col-md-5 d-flex flex-column">
-                            <div class="glass-card shadow-glass p-3 h-100">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h3 class="h6 text-white mb-0 font-sans font-weight-bold">
-                                        👤 Sync Profile
-                                    </h3>
-                                    <span class="badge bg-cyan text-dark rounded-pill font-sans text-xs px-2.5 py-1">@userProfile.Tier</span>
-                                </div>
-                                
-                                <div class="profile-grid font-sans text-sm gap-2">
-                                    <div class="profile-label text-muted-cyan">ACCOUNT:</div>
-                                    <div class="profile-value text-white text-truncate font-weight-bold">@userProfile.Email</div>
-                                    
-                                    <div class="profile-label text-muted-cyan">MODE:</div>
-                                    <div class="profile-value @(isZlaMode ? "text-warning" : "text-green")">
-                                        @(isZlaMode ? "Zero Liability (Local)" : "Cloud Authenticated")
+                    <!-- Connected Services Hub View -->
+                    <div class="d-flex flex-column h-100 gap-3">
+                        <div class="row g-3">
+                            <!-- WaZWeather Card -->
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="glass-card p-3 h-100 d-flex flex-column justify-content-between border-glass hover-bright position-relative">
+                                    <div>
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <span class="fs-4">🌤️</span>
+                                            <span class="badge bg-green text-dark font-mono text-xxs px-2 py-0.5 rounded-pill">ONLINE</span>
+                                        </div>
+                                        <h4 class="h6 text-white font-weight-bold mb-1">WaZWeather</h4>
+                                        <p class="text-muted-cyan text-xs mb-3">Live atmospheric intelligence, radar tracking, & location-based forecasts.</p>
                                     </div>
-                                    
-                                    <div class="profile-label text-muted-cyan">CREDITS:</div>
-                                    <div class="profile-value text-cyan font-weight-bold">@userProfile.Credits.ToString("N0") units</div>
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top-glass">
+                                        <button class="btn btn-xs btn-outline-info border-glass text-cyan text-xs rounded-pill" @onclick='() => activeTab = "settings"'>
+                                            ⚙️ Settings
+                                        </button>
+                                        <a href="https://wazweather.dondlingergc.com" target="_blank" class="btn btn-xs btn-cyan text-dark text-xs font-mono rounded-pill px-3">
+                                            Launch App ↗
+                                        </a>
+                                    </div>
                                 </div>
+                            </div>
 
-                                <hr class="border-glass my-3" />
+                            <!-- Inspect Llamado Card -->
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="glass-card p-3 h-100 d-flex flex-column justify-content-between border-glass hover-bright position-relative">
+                                    <div>
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <span class="fs-4">📋</span>
+                                            <span class="badge bg-green text-dark font-mono text-xxs px-2 py-0.5 rounded-pill">ONLINE</span>
+                                        </div>
+                                        <h4 class="h6 text-white font-weight-bold mb-1">Inspect Llamado</h4>
+                                        <p class="text-muted-cyan text-xs mb-3">Commercial site inspection tool, report generator & photo management software.</p>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top-glass">
+                                        <button class="btn btn-xs btn-outline-info border-glass text-cyan text-xs rounded-pill" @onclick='() => activeTab = "settings"'>
+                                            ⚙️ Settings
+                                        </button>
+                                        <a href="https://inspectallamado.dondlingergc.com" target="_blank" class="btn btn-xs btn-cyan text-dark text-xs font-mono rounded-pill px-3">
+                                            Launch App ↗
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
 
-                                <div class="text-muted-cyan text-xs font-sans">
-                                    Your profile settings automatically sync across all platform services and endpoints.
+                            <!-- Edge AI Router Card -->
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="glass-card p-3 h-100 d-flex flex-column justify-content-between border-glass hover-bright position-relative">
+                                    <div>
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <span class="fs-4">⚡</span>
+                                            <span class="badge bg-glass-neon text-cyan font-mono text-xxs px-2 py-0.5 rounded-pill">PRO ENGINE</span>
+                                        </div>
+                                        <h4 class="h6 text-white font-weight-bold mb-1">Edge AI Router</h4>
+                                        <p class="text-muted-cyan text-xs mb-3">Stateless webpage audit engine powered by Llama 3.3 70B Edge Workers AI.</p>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top-glass">
+                                        <button class="btn btn-xs btn-outline-info border-glass text-cyan text-xs rounded-pill" @onclick='() => activeTab = "edge"'>
+                                            🧪 Open Scraper
+                                        </button>
+                                        <button class="btn btn-xs btn-cyan text-dark text-xs font-mono rounded-pill px-3" @onclick='() => activeTab = "edge"'>
+                                            Run Eval ⚡
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Credit History Audit Panel -->
-                        <div class="col-12 col-md-7 d-flex flex-column">
-                            <div class="glass-card shadow-glass p-3 h-100 d-flex flex-column">
-                                <div class="d-flex justify-content-between align-items-center mb-2 flex-shrink-0">
-                                    <h3 class="h6 text-white mb-0 font-sans font-weight-bold">
-                                        Credit History & Activity
-                                    </h3>
-                                    <button class="btn btn-xs btn-outline-info border-glass rounded-pill px-2.5 py-0.5 text-xs font-sans" @onclick="LoadCreditHistory" disabled="@isLoadingCreditHistory">
-                                        @if (isLoadingCreditHistory)
-                                        {
-                                            <span class="spinner-border spinner-border-xs" role="status" aria-hidden="true"></span>
-                                        }
-                                        else
-                                        {
-                                            <span>Refresh</span>
-                                        }
-                                    </button>
+                        <!-- Sync Status & Overview Bar -->
+                        <div class="glass-card p-3">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                <div>
+                                    <h4 class="h6 text-white mb-0 font-weight-bold">Single Sign-On & Global Personalization Pass</h4>
+                                    <p class="text-muted-cyan text-xs mb-0">Logged in as <strong class="text-white">@userProfile.Email</strong> (@userProfile.Tier Tier). All preferences sync seamlessly across `*.dondlingergc.com`.</p>
                                 </div>
-
-                                @if (isLoadingCreditHistory)
-                                {
-                                    <div class="text-center py-4 text-muted-cyan font-sans text-xs my-auto">
-                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                        Loading audit log...
-                                    </div>
-                                }
-                                else if (creditHistory == null || creditHistory.Count == 0)
-                                {
-                                    <div class="text-muted-cyan text-xs py-4 italic font-sans text-center border-glass-dashed rounded my-auto">
-                                        No transaction activity yet.
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="credit-ledger-list d-flex flex-column gap-1.5 font-sans text-xs overflow-auto flex-grow-1 pr-1" style="max-height: 380px;">
-                                        @foreach (var tx in creditHistory)
-                                        {
-                                            <div class="p-2 rounded border-glass d-flex justify-content-between align-items-center bg-glass-dark">
-                                                <div class="d-flex flex-column me-2 text-truncate">
-                                                    <span class="text-white text-truncate font-sans font-weight-bold">@tx.Description</span>
-                                                    <span class="text-muted-cyan text-xxs">@FormatTimestamp(tx.Created_at)</span>
-                                                </div>
-                                                <div class="font-weight-bold @(tx.Amount_cents >= 0 ? "text-green" : "text-danger-glass") text-nowrap">
-                                                    @(tx.Amount_cents >= 0 ? $"+{tx.Amount_cents}" : tx.Amount_cents.ToString())
-                                                </div>
-                                            </div>
-                                        }
-                                    </div>
-                                }
+                                <button class="btn btn-xs btn-outline-info border-glass text-cyan font-mono text-xs rounded-pill px-3" @onclick='() => activeTab = "billing"'>
+                                    Refill Credits / Manage Premium →
+                                </button>
                             </div>
                         </div>
                     </div>
                 }
-                else if (activeTab == "vault")
+                else if (activeTab == "settings" || activeTab == "vault")
                 {
                     <!-- Settings & Key Vault View -->
                     <div class="glass-card shadow-glass p-3 p-md-4 h-100 d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom-glass pb-2">
-                            <h3 class="h6 text-white mb-0 font-sans font-weight-bold">
-                                Settings & Preferences
-                            </h3>
+                            <div>
+                                <h3 class="h6 text-white mb-0 font-sans font-weight-bold">
+                                    Connected Service Settings & Key Vault
+                                </h3>
+                                <p class="text-muted-cyan text-xs mb-0">Configure preferences and retrieve credentials per connected platform service.</p>
+                            </div>
                             
                             <div class="form-check form-switch zla-switch font-sans text-xs d-flex align-items-center gap-2">
                                 <input class="form-check-input" type="checkbox" role="switch" id="zlaToggle" @bind="isZlaMode" @bind:after="OnZlaModeChanged" />
@@ -231,52 +241,59 @@
                             </div>
                         </div>
 
-                        <div class="row g-3 flex-grow-1">
+                        <div class="row g-3 flex-grow-1 overflow-auto">
+                            <!-- WaZWeather Settings -->
                             <div class="col-12 col-md-6">
-                                <label class="form-label text-muted-cyan font-sans text-xs mb-1">Visual Theme</label>
-                                <select class="form-select select-glass font-sans text-xs py-1.5" @bind="userSettings.Theme" @bind:after="OnSettingsChanged">
-                                    <option value="dark">Dark Theme</option>
-                                    <option value="light">Light Theme</option>
-                                    <option value="dracula">High Contrast Theme</option>
-                                </select>
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-muted-cyan font-sans text-xs mb-1">Measurement Unit</label>
-                                <select class="form-select select-glass font-sans text-xs py-1.5" @bind="userSettings.Unit" @bind:after="OnSettingsChanged">
-                                    <option value="imperial">Imperial (°F, mph)</option>
-                                    <option value="metric">Metric (°C, m/s)</option>
-                                </select>
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label text-muted-cyan font-mono text-xs d-flex justify-content-between mb-1">
-                                    <span>MONITORED REGIONS</span>
-                                    <span class="text-cyan">@userSettings.Locations.Count / 5</span>
-                                </label>
-                                
-                                <div class="d-flex gap-2 mb-2">
-                                    <input type="text" class="form-control input-glass font-mono text-xs py-1.5" placeholder="Add location (e.g. Wichita, KS)..." @bind="newLocationInput" @onkeyup="HandleLocationKeyup" />
-                                    <button class="btn btn-cyan btn-xs px-3 font-mono" @onclick="AddLocation">Add</button>
-                                </div>
-
-                                <div class="locations-chip-list">
-                                    @if (userSettings.Locations == null || userSettings.Locations.Count == 0)
-                                    {
-                                        <div class="text-muted-cyan text-xs py-2 italic font-sans text-center border-glass-dashed rounded">
-                                            No locations configured.
+                                <div class="p-3 bg-glass-dark border-glass rounded h-100">
+                                    <h4 class="h6 text-cyan font-mono mb-2">🌤️ WaZWeather Preferences</h4>
+                                    <div class="mb-2">
+                                        <label class="form-label text-muted-cyan font-sans text-xs mb-1">Measurement Unit</label>
+                                        <select class="form-select select-glass font-sans text-xs py-1.5" @bind="userSettings.Unit" @bind:after="OnSettingsChanged">
+                                            <option value="imperial">Imperial (°F, mph)</option>
+                                            <option value="metric">Metric (°C, m/s)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label text-muted-cyan font-mono text-xs d-flex justify-content-between mb-1">
+                                            <span>DEFAULT REGIONS</span>
+                                            <span class="text-cyan">@userSettings.Locations.Count / 5</span>
+                                        </label>
+                                        <div class="d-flex gap-2 mb-2">
+                                            <input type="text" class="form-control input-glass font-mono text-xs py-1.5" placeholder="Add region..." @bind="newLocationInput" @onkeyup="HandleLocationKeyup" />
+                                            <button class="btn btn-cyan btn-xs px-3 font-mono" @onclick="AddLocation">Add</button>
                                         </div>
-                                    }
-                                    else
-                                    {
-                                        @foreach (var loc in userSettings.Locations)
-                                        {
-                                            <span class="location-chip d-inline-flex align-items-center gap-1.5 px-2.5 py-1 rounded-pill font-mono text-xs text-white">
-                                                <span>@loc</span>
-                                                <button type="button" class="btn-remove-chip" @onclick="() => RemoveLocation(loc)">&times;</button>
-                                            </span>
-                                        }
-                                    }
+                                        <div class="locations-chip-list">
+                                            @foreach (var loc in userSettings.Locations)
+                                            {
+                                                <span class="location-chip d-inline-flex align-items-center gap-1.5 px-2.5 py-1 rounded-pill font-mono text-xs text-white">
+                                                    <span>@loc</span>
+                                                    <button type="button" class="btn-remove-chip" @onclick="() => RemoveLocation(loc)">&times;</button>
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Visual & Global System Settings -->
+                            <div class="col-12 col-md-6">
+                                <div class="p-3 bg-glass-dark border-glass rounded h-100">
+                                    <h4 class="h6 text-cyan font-mono mb-2">⚙️ Portal Appearance & API Keys</h4>
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted-cyan font-sans text-xs mb-1">Visual Theme</label>
+                                        <select class="form-select select-glass font-sans text-xs py-1.5" @bind="userSettings.Theme" @bind:after="OnSettingsChanged">
+                                            <option value="dark">Dark Neon Theme</option>
+                                            <option value="light">Light Glass Theme</option>
+                                            <option value="dracula">High Contrast Matrix</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label text-muted-cyan font-mono text-xs mb-1">YOUR SINGLE SIGN-ON JWT PASS</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control input-glass font-mono text-xs py-1.5" value="@jwtToken" readonly />
+                                            <button class="btn btn-outline-info border-glass text-cyan text-xs font-mono" @onclick="CopyTokenToClipboard">Copy</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -287,6 +304,113 @@
                                 @syncMessage
                             </div>
                         }
+                    </div>
+                }
+                else if (activeTab == "billing")
+                {
+                    <!-- Premium Plans & Credit Top-Up Suite -->
+                    <div class="glass-card shadow-glass p-3 p-md-4 h-100 d-flex flex-column overflow-auto">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 border-bottom-glass pb-2 gap-2">
+                            <div>
+                                <h3 class="h6 text-white mb-0 font-sans font-weight-bold">
+                                    💳 Subscription Tier & Credit Refill Suite
+                                </h3>
+                                <p class="text-muted-cyan text-xs mb-0">Manage service tiers, purchase edge compute credits, and inspect billing ledgers.</p>
+                            </div>
+                            <div class="badge bg-glass-neon text-cyan font-mono text-sm px-3 py-1.5 rounded-pill border-glass">
+                                Active Balance: @userProfile.Credits.ToString("N0") Credits
+                            </div>
+                        </div>
+
+                        <!-- Top-up & Subscription Cards -->
+                        <div class="row g-3 mb-4">
+                            <!-- Tier Upgrade Card -->
+                            <div class="col-12 col-md-4">
+                                <div class="p-3 bg-glass-dark border-glass rounded h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <span class="badge bg-cyan text-dark font-mono text-xxs mb-2">TIER UPGRADE</span>
+                                        <h4 class="h6 text-white font-weight-bold mb-1">Pro Plan</h4>
+                                        <div class="h4 text-cyan font-mono mb-2">$19 <span class="text-xs text-muted-cyan font-sans">/ month</span></div>
+                                        <ul class="text-muted-cyan text-xs list-unstyled mb-3 gap-1 d-flex flex-column">
+                                            <li>✔ 2,500 Monthly AI Router Credits</li>
+                                            <li>✔ Priority Edge Inference Speed</li>
+                                            <li>✔ Cross-App Sync Across All Services</li>
+                                        </ul>
+                                    </div>
+                                    <button class="btn btn-cyan btn-glow w-100 font-mono text-xs py-1.5" @onclick='() => UpgradeTier("pro", 2500)' disabled="@(userProfile.Tier == "pro")">
+                                        @(userProfile.Tier == "pro" ? "Current Plan" : "Upgrade to Pro")
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Enterprise Tier Card -->
+                            <div class="col-12 col-md-4">
+                                <div class="p-3 bg-glass-dark border-glass rounded h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <span class="badge bg-glass-neon text-cyan font-mono text-xxs mb-2">ENTERPRISE</span>
+                                        <h4 class="h6 text-white font-weight-bold mb-1">Enterprise Tier</h4>
+                                        <div class="h4 text-cyan font-mono mb-2">$99 <span class="text-xs text-muted-cyan font-sans">/ month</span></div>
+                                        <ul class="text-muted-cyan text-xs list-unstyled mb-3 gap-1 d-flex flex-column">
+                                            <li>✔ 15,000 Monthly AI Router Credits</li>
+                                            <li>✔ Unlimited Connected Service Keys</li>
+                                            <li>✔ Dedicated Durable Object Instance</li>
+                                        </ul>
+                                    </div>
+                                    <button class="btn btn-outline-info border-glass text-cyan w-100 font-mono text-xs py-1.5" @onclick='() => UpgradeTier("enterprise", 15000)' disabled="@(userProfile.Tier == "enterprise")">
+                                        @(userProfile.Tier == "enterprise" ? "Current Plan" : "Upgrade to Enterprise")
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Direct Refill Card -->
+                            <div class="col-12 col-md-4">
+                                <div class="p-3 bg-glass-dark border-glass rounded h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <span class="badge bg-warning text-dark font-mono text-xxs mb-2">INSTANT TOP-UP</span>
+                                        <h4 class="h6 text-white font-weight-bold mb-1">Refill Edge Credits</h4>
+                                        <p class="text-muted-cyan text-xs mb-2">Add credits directly to your account balance without changing your tier.</p>
+                                        <div class="d-flex gap-1.5 mb-2">
+                                            <button class="btn btn-xs btn-outline-info border-glass text-white font-mono flex-grow-1" @onclick="() => BuyCredits(500)">+500</button>
+                                            <button class="btn btn-xs btn-outline-info border-glass text-white font-mono flex-grow-1" @onclick="() => BuyCredits(2000)">+2,000</button>
+                                            <button class="btn btn-xs btn-cyan font-mono text-dark font-weight-bold flex-grow-1" @onclick="() => BuyCredits(10000)">+10,000</button>
+                                        </div>
+                                    </div>
+                                    <div class="text-muted-cyan text-xxs font-mono text-center">Instant Cloudflare D1 Sync</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Credit Ledger Table -->
+                        <div class="flex-grow-1 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h4 class="h6 text-white mb-0 font-weight-bold">Transaction & Credit History</h4>
+                                <button class="btn btn-xs btn-outline-info border-glass text-cyan text-xs font-mono rounded-pill px-2.5" @onclick="LoadCreditHistory">Refresh Ledger</button>
+                            </div>
+                            
+                            @if (creditHistory == null || creditHistory.Count == 0)
+                            {
+                                <div class="text-muted-cyan text-xs py-3 italic font-sans text-center border-glass-dashed rounded">
+                                    No transaction activity logged yet.
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="credit-ledger-list d-flex flex-column gap-1.5 font-sans text-xs overflow-auto flex-grow-1" style="max-height: 250px;">
+                                    @foreach (var tx in creditHistory)
+                                    {
+                                        <div class="p-2 rounded border-glass d-flex justify-content-between align-items-center bg-glass-dark">
+                                            <div class="d-flex flex-column me-2 text-truncate">
+                                                <span class="text-white text-truncate font-sans font-weight-bold">@tx.Description</span>
+                                                <span class="text-muted-cyan text-xxs">@FormatTimestamp(tx.Created_at)</span>
+                                            </div>
+                                            <div class="font-weight-bold @(tx.Amount_cents >= 0 ? "text-green" : "text-danger-glass") text-nowrap">
+                                                @(tx.Amount_cents >= 0 ? $"+{tx.Amount_cents}" : tx.Amount_cents.ToString())
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
                     </div>
                 }
                 else if (activeTab == "edge")
