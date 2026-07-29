@@ -7,6 +7,7 @@ export default {
     const allowedOrigins = [
       "https://personalization.dondlingergc.com",
       "https://wazweather.dondlingergc.com",
+      "https://inspectallamado.dondlingergc.com",
       "http://localhost:5000",
       "https://localhost:5001"
     ];

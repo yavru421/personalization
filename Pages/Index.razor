@@ -39,6 +39,9 @@
                 <a href="/scraper" class="btn btn-xs btn-cyan border-glass rounded-pill px-2.5 py-1 text-dark text-decoration-none font-mono font-weight-bold text-xs">
                     ⚡ Scraper
                 </a>
+                <a href="https://inspectallamado.dondlingergc.com" target="_blank" class="btn btn-xs btn-outline-info border-glass rounded-pill px-2.5 py-1 text-cyan text-decoration-none text-xs">
+                    Inspect Llamado ↗
+                </a>
                 <a href="https://wazweather.dondlingergc.com" target="_blank" class="btn btn-xs btn-outline-info border-glass rounded-pill px-2.5 py-1 text-cyan text-decoration-none text-xs">
                     WaZWeather ↗
                 </a>
@@ -129,17 +132,17 @@
                     <div class="row g-3 h-100">
                         <!-- Profile Card -->
                         <div class="col-12 col-md-5 d-flex flex-column">
-                            <div class="glass-card shadow-glass p-3 mb-3">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h3 class="h6 text-white mb-0 font-mono text-uppercase tracking-wider">
+                            <div class="glass-card shadow-glass p-3 h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="h6 text-white mb-0 font-sans font-weight-bold">
                                         👤 Sync Profile
                                     </h3>
-                                    <span class="badge bg-cyan text-dark rounded-pill font-mono text-xs">@userProfile.Tier</span>
+                                    <span class="badge bg-cyan text-dark rounded-pill font-sans text-xs px-2.5 py-1">@userProfile.Tier</span>
                                 </div>
                                 
-                                <div class="profile-grid font-mono text-xs">
+                                <div class="profile-grid font-sans text-sm gap-2">
                                     <div class="profile-label text-muted-cyan">ACCOUNT:</div>
-                                    <div class="profile-value text-white text-truncate">@userProfile.Email</div>
+                                    <div class="profile-value text-white text-truncate font-weight-bold">@userProfile.Email</div>
                                     
                                     <div class="profile-label text-muted-cyan">MODE:</div>
                                     <div class="profile-value @(isZlaMode ? "text-warning" : "text-green")">
@@ -149,39 +152,11 @@
                                     <div class="profile-label text-muted-cyan">CREDITS:</div>
                                     <div class="profile-value text-cyan font-weight-bold">@userProfile.Credits.ToString("N0") units</div>
                                 </div>
-                            </div>
 
-                            <!-- Teammate Quick Personalization Accent Panel -->
-                            <div class="glass-card shadow-glass p-3 flex-grow-1">
-                                <h3 class="h6 text-white mb-2 font-mono text-uppercase tracking-wider">
-                                    👥 Teammate Quick Presets
-                                </h3>
-                                <p class="text-muted-cyan text-xs mb-2">Select an operator profile for tailored weather monitoring & theme shortcuts:</p>
+                                <hr class="border-glass my-3" />
 
-                                <div class="d-flex flex-column gap-2 font-mono text-xs">
-                                    <div class="p-2 rounded border-glass bg-glass-dark d-flex justify-content-between align-items-center cursor-pointer hover-bright" @onclick='() => ApplyTeammatePreset("John")'>
-                                        <div>
-                                            <div class="text-cyan font-weight-bold">John (Chief Architect)</div>
-                                            <div class="text-muted-cyan text-xxs">Cyber Dark • HighTops4Life Discography Accent</div>
-                                        </div>
-                                        <span class="badge bg-glass-neon text-cyan text-xxs">Apply</span>
-                                    </div>
-
-                                    <div class="p-2 rounded border-glass bg-glass-dark d-flex justify-content-between align-items-center cursor-pointer hover-bright" @onclick='() => ApplyTeammatePreset("Jace")'>
-                                        <div>
-                                            <div class="text-warning font-weight-bold">Jace (Forever Honored)</div>
-                                            <div class="text-muted-cyan text-xxs">Neon Gold • Eagle Construction Precision</div>
-                                        </div>
-                                        <span class="badge bg-glass-neon text-warning text-xxs">Apply</span>
-                                    </div>
-
-                                    <div class="p-2 rounded border-glass bg-glass-dark d-flex justify-content-between align-items-center cursor-pointer hover-bright" @onclick='() => ApplyTeammatePreset("Chris")'>
-                                        <div>
-                                            <div class="text-green font-weight-bold">Chris (Legacy Builder)</div>
-                                            <div class="text-muted-cyan text-xxs">Emerald Cyber • Snaptempo Trade Roots</div>
-                                        </div>
-                                        <span class="badge bg-glass-neon text-green text-xxs">Apply</span>
-                                    </div>
+                                <div class="text-muted-cyan text-xs font-sans">
+                                    Your profile settings automatically sync across all platform services and endpoints.
                                 </div>
                             </div>
                         </div>
@@ -190,24 +165,24 @@
                         <div class="col-12 col-md-7 d-flex flex-column">
                             <div class="glass-card shadow-glass p-3 h-100 d-flex flex-column">
                                 <div class="d-flex justify-content-between align-items-center mb-2 flex-shrink-0">
-                                    <h3 class="h6 text-white mb-0 font-mono text-uppercase tracking-wider">
-                                        📜 Credit History & Audit Trail
+                                    <h3 class="h6 text-white mb-0 font-sans font-weight-bold">
+                                        Credit History & Activity
                                     </h3>
-                                    <button class="btn btn-xs btn-outline-info border-glass rounded-pill px-2.5 py-0.5 text-xs font-mono" @onclick="LoadCreditHistory" disabled="@isLoadingCreditHistory">
+                                    <button class="btn btn-xs btn-outline-info border-glass rounded-pill px-2.5 py-0.5 text-xs font-sans" @onclick="LoadCreditHistory" disabled="@isLoadingCreditHistory">
                                         @if (isLoadingCreditHistory)
                                         {
                                             <span class="spinner-border spinner-border-xs" role="status" aria-hidden="true"></span>
                                         }
                                         else
                                         {
-                                            <span>Refresh ↻</span>
+                                            <span>Refresh</span>
                                         }
                                     </button>
                                 </div>
 
                                 @if (isLoadingCreditHistory)
                                 {
-                                    <div class="text-center py-4 text-muted-cyan font-mono text-xs my-auto">
+                                    <div class="text-center py-4 text-muted-cyan font-sans text-xs my-auto">
                                         <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                                         Loading audit log...
                                     </div>
@@ -215,12 +190,12 @@
                                 else if (creditHistory == null || creditHistory.Count == 0)
                                 {
                                     <div class="text-muted-cyan text-xs py-4 italic font-sans text-center border-glass-dashed rounded my-auto">
-                                        No credit transactions recorded yet.
+                                        No transaction activity yet.
                                     </div>
                                 }
                                 else
                                 {
-                                    <div class="credit-ledger-list d-flex flex-column gap-1.5 font-mono text-xs overflow-auto flex-grow-1 pr-1" style="max-height: 380px;">
+                                    <div class="credit-ledger-list d-flex flex-column gap-1.5 font-sans text-xs overflow-auto flex-grow-1 pr-1" style="max-height: 380px;">
                                         @foreach (var tx in creditHistory)
                                         {
                                             <div class="p-2 rounded border-glass d-flex justify-content-between align-items-center bg-glass-dark">
@@ -244,31 +219,31 @@
                     <!-- Settings & Key Vault View -->
                     <div class="glass-card shadow-glass p-3 p-md-4 h-100 d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom-glass pb-2">
-                            <h3 class="h6 text-white mb-0 font-mono text-uppercase tracking-wider">
-                                🔐 Sync Settings & Preferences Vault
+                            <h3 class="h6 text-white mb-0 font-sans font-weight-bold">
+                                Settings & Preferences
                             </h3>
                             
-                            <div class="form-check form-switch zla-switch font-mono text-xs d-flex align-items-center gap-2">
+                            <div class="form-check form-switch zla-switch font-sans text-xs d-flex align-items-center gap-2">
                                 <input class="form-check-input" type="checkbox" role="switch" id="zlaToggle" @bind="isZlaMode" @bind:after="OnZlaModeChanged" />
                                 <label class="form-check-label text-warning" for="zlaToggle">
-                                    🛡️ ZLA Mode
+                                    Local Storage Only (ZLA)
                                 </label>
                             </div>
                         </div>
 
                         <div class="row g-3 flex-grow-1">
                             <div class="col-12 col-md-6">
-                                <label class="form-label text-muted-cyan font-mono text-xs mb-1">VISUAL THEME</label>
-                                <select class="form-select select-glass font-mono text-xs py-1.5" @bind="userSettings.Theme" @bind:after="OnSettingsChanged">
-                                    <option value="dark">Vibrant Cyber Dark</option>
-                                    <option value="light">Frosted Glass Light</option>
-                                    <option value="dracula">Neon Vampire Dracula</option>
+                                <label class="form-label text-muted-cyan font-sans text-xs mb-1">Visual Theme</label>
+                                <select class="form-select select-glass font-sans text-xs py-1.5" @bind="userSettings.Theme" @bind:after="OnSettingsChanged">
+                                    <option value="dark">Dark Theme</option>
+                                    <option value="light">Light Theme</option>
+                                    <option value="dracula">High Contrast Theme</option>
                                 </select>
                             </div>
 
                             <div class="col-12 col-md-6">
-                                <label class="form-label text-muted-cyan font-mono text-xs mb-1">MEASUREMENT UNIT</label>
-                                <select class="form-select select-glass font-mono text-xs py-1.5" @bind="userSettings.Unit" @bind:after="OnSettingsChanged">
+                                <label class="form-label text-muted-cyan font-sans text-xs mb-1">Measurement Unit</label>
+                                <select class="form-select select-glass font-sans text-xs py-1.5" @bind="userSettings.Unit" @bind:after="OnSettingsChanged">
                                     <option value="imperial">Imperial (°F, mph)</option>
                                     <option value="metric">Metric (°C, m/s)</option>
                                 </select>
