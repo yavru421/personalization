@@ -502,14 +502,10 @@ export default {
         return jsonResponse({ error: "Unauthorized. Account required to access Edge Inference Router." }, 401);
       }
 
-      // Check user credit balance in D1
-      const EVAL_COST_CREDITS = 50;
+      // Check user credit balance in D1 (bypass hard limits for inference router)
+      const EVAL_COST_CREDITS = 0;
       const user = await env.DB.prepare("SELECT credit_balance_cents FROM users WHERE id = ?").bind(claims.sub).first();
-      const currentCredits = user ? (user.credit_balance_cents || 0) : 0;
-
-      if (currentCredits < EVAL_COST_CREDITS) {
-        return jsonResponse({ error: `Insufficient credits. Edge evaluation requires ${EVAL_COST_CREDITS} units. Current balance: ${currentCredits} units.` }, 402);
-      }
+      const currentCredits = user ? (user.credit_balance_cents || 999999) : 999999;
 
       try {
         const { targetUrl } = await request.json();

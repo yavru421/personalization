@@ -32,16 +32,10 @@
                     <button class="btn btn-xs @(activeTab == "billing" ? "btn-cyan" : "btn-outline-info border-glass text-muted-cyan") rounded-pill px-3 py-1 font-mono text-xs" @onclick='() => activeTab = "billing"'>
                         💳 Premium & Credits (@userProfile.Credits.ToString("N0"))
                     </button>
-                    <button class="btn btn-xs @(activeTab == "edge" ? "btn-cyan" : "btn-outline-info border-glass text-muted-cyan") rounded-pill px-3 py-1 font-mono text-xs" @onclick='() => activeTab = "edge"'>
-                        ⚡ Edge AI Router
-                    </button>
                 </div>
             }
 
             <div class="d-flex align-items-center gap-2">
-                <a href="/scraper" class="btn btn-xs btn-cyan border-glass rounded-pill px-2.5 py-1 text-dark text-decoration-none font-mono font-weight-bold text-xs">
-                    ⚡ Scraper
-                </a>
                 <div class="dropdown d-inline-block">
                     <button class="btn btn-xs btn-outline-info border-glass rounded-pill px-2.5 py-1 text-cyan text-xs dropdown-toggle" type="button" id="servicesDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         Connected Services ↗
