@@ -28,3 +28,10 @@ agents/*
 # --------------------------------------------------------
 # Ignore specific global rules by their tag ID
 rules/AGENTS.md:Cloudflare_Deployment_Workflow
+
+# --------------------------------------------------------
+# 5. Workspace Specific Blocks
+# --------------------------------------------------------
+# The C# GUI was purged during the CLI redesign phase. Do not look in here.
+gui_data/
+src/UvrApp/

@@ -1,139 +1,136 @@
-<RULE[AGENTS.md]>
-**The ZLA Toolbox (Opt-In Architecture):**
-- **Default Behavior:** ALWAYS default to standard, pragmatic engineering stacks. If a project requires a backend, a local database, or server-side APIs, build it without hesitation. 
-- **ZLA Definition:** Zero-Liability Architecture (ZLA) strictly denotes a 100% client-side, backend-free, static web application.
-- **When to Apply ZLA:** ONLY enforce ZLA constraints if the user EXPLICITLY requests it for the current project (e.g., "Let's build this as a ZLA app"). 
-- **Marketing Context:** When ZLA *is* deployed, retain the name to establish authority (e.g., "Because it's ZLA, your server bill is $0 and you can't be hacked").
-</RULE[AGENTS.md]>
+<RULE[session_boot_orientation]>
+**1. Session Boot & Dynamic Reasoning Invariant:**
+Use `sequentialthinking` dynamically when tackling complex multi-step reasoning, architectural design, or non-trivial debugging. Do NOT burn preamble tool calls on simple turns or straightforward tasks.
+</RULE[session_boot_orientation]>
 
-<RULE[AGENTS.md]>
-**Cloudflare Deployment Workflow:**
-For ALL Cloudflare projects (Workers, Pages, or hybrid), NEVER run `wrangler deploy` or `npx wrangler deploy` directly to deploy frontend or full-stack apps.
-The ONLY correct deployment workflow is:
-1. `git add`
-2. `git commit`
-3. `git push origin main` (or the appropriate branch)
+<RULE[metropolis_topology_map]>
+**2. Metropolis Infrastructure Topology Map:**
+- **Primary Host PC**: `Metropolis-Prime` (`MetroNode`)
+- **Tethered/Attached Sidecars**: `Boroughs` (PCIe cards, USB accelerators, local sidecar MCP servers: `workspace-execution-mcp-server`, `duckdb-supercharger`, `agy-mcp-server`, `orchestrator-do-mcp-server`, `cloudflare-inference-mcp-server`, `wrangler-mcp-server`, `options-mcp-server`, `telegram-app-mcp-server`)
+- **Rogue / Standalone Field Devices**: `Villages` (Battery-powered Pis, field SBCs)
+- **Multi-Host Network**: `Megalopolis`
+- **Edge Cloud Workers**: `Watchtowers` (Cloudflare Workers AI edge router)
+- **Memory & Telemetry Lake**: `The Archives` (`C:\Users\John\.gemini\config\mind.duckdb`, `agent_memory.duckdb`, `st_codex.duckdb`)
+</RULE[metropolis_topology_map]>
 
-Cloudflare CI automatically builds and deploys on every push. Direct wrangler deploys bypass CI, skip the build pipeline, and cause version mismatches between what GitHub has and what is live.
+<RULE[execution_kernel_invariant]>
+**3. Execution Kernel & Verification Invariant:**
+Execute ALL file mutations, state checks, and DuckDB queries via `workspace-execution-mcp-server` sidecar tools (`workspace_fs_mutate`, `workspace_verify_state`, `workspace_duckdb_query`). Never declare success without showing real terminal output.
+</RULE[execution_kernel_invariant]>
 
-*Exception*: If the project directory lacks a configured git remote repository (e.g., `git remote -v` returns no origin), the agent is permitted to execute `npx wrangler deploy` locally to update the service.
-</RULE[AGENTS.md]>
+<RULE[direct_communication_invariant]>
+**4. Direct Communication Invariant:**
+Zero AI cheerleading, zero fluff, zero fake compliance. Ask direct engineering questions when intent is ambiguous.
+</RULE[direct_communication_invariant]>
 
-<RULE[AGENTS.md]>
-**`agy-mcp-server` Sidecar Execution Guidance:**
-For complex multi-line scripts, DuckDB operations, and commands requiring structured argument arrays, PREFER using `agy-mcp-server` (`exec_cmd`) or dedicated script files (`.py`/`.ps1`) to prevent string-escaping bugs.
-- Simple single-binary invocations (e.g., `git status`, `python script.py`, `conda list`) MAY use native `run_command` directly.
-- Raw inline multi-statement PowerShell strings via `run_command` remain DISCOURAGED due to escaping fragility.
-- When in doubt, use `agy-mcp-server` or write a dedicated script file.
-</RULE[AGENTS.md]>
+<RULE[single_source_hardlink_invariant]>
+**5. Single Source of Truth Hard-Link Invariant:**
+`C:\Users\John\.gemini\config\AGENTS.md` is the single source of truth. Enforce NTFS hard links (`os.link`) to all workspace target directories in `C:\dev`.
+</RULE[single_source_hardlink_invariant]>
 
-<RULE[AGENTS.md]>
-**Canonical DuckDB Database Registry & Command Invariant:**
-All DuckDB database queries MUST use the explicit, absolute paths registered below without runtime path guessing or exploratory checks:
-- **`mind.duckdb`**: `C:\Users\John\.gemini\config\mind.duckdb`
-- **`agent_memory.duckdb`**: `C:\Users\John\.gemini\config\agent_memory.duckdb`
-- **`st_codex.duckdb`**: `C:\Users\John\.gemini\config\st_codex.duckdb`
+<RULE[anti_loop_verification_invariant]>
+**6. Anti-Loop & Environment Verification Invariant:**
+NEVER repeat a failed command or package installation (e.g., PyTorch CUDA reinstalls). Before executing any environment mutation, verify active package states via `workspace-execution-mcp-server`. If a command fails once, STOP and inspect error trace logs before retrying.
+</RULE[anti_loop_verification_invariant]>
 
-Before invoking `run_command` or Python DuckDB scripts, the agent MUST explicitly target these exact paths. Never construct relative paths, infer session directories, or run exploratory file sweeps.
-</RULE[AGENTS.md]>
+<RULE[anti_subprocess_fallback_invariant]>
+**7. Anti-Subprocess Fallback Invariant:**
+All file mutations, DuckDB queries, and hardlink checks MUST be executed using `workspace-execution-mcp-server` sidecar tools (`workspace_duckdb_query`, `workspace_verify_state`, `workspace_fs_mutate`). Spawning raw Python (`python -c`), PowerShell (`run_command`), or background script processes for tasks supported by these sidecar tools is strictly BANNED.
+</RULE[anti_subprocess_fallback_invariant]>
 
-<RULE[AGENTS.md]>
-**Command Failure Resolution (No Bandaids):**
-If you, an Antigravity agent, run a command (e.g. via `run_command` or background tasks) and it FAILS, you MUST:
-1. Immediately log the failure.
-2. DO NOT move on or continue with subsequent steps.
-3. Completely resolve the underlying failure to guarantee CORRECTNESS (do NOT use bandaid fixes or workarounds).
-4. Verify the command succeeds before proceeding with the rest of your task.
-This is non-negotiable and must be handled with utmost priority to prevent cascading errors and silent failures.
-</RULE[AGENTS.md]>
+<RULE[slash_command_first_step_invariant]>
+**8. Slash Command First-Step Sidecar Invariant:**
+If a user request contains ANY slash command, the VERY FIRST tool call MUST be the designated sidecar for that command. Bypassing or delaying is strictly BANNED. Read the SKILL.md before firing. Complete slash command → first-step sidecar map:
 
-<RULE[AGENTS.md]>
-**Friction Elimination & Auto-Correction Invariant:**
-- **Definition**: FRICTION occurs whenever the agent misinterprets operator intent, loops on broken patterns, or requires repeated corrections.
-- **Mandatory Action**: FRICTION is strictly treated as a hard system configuration bug. The agent MUST:
-  1. Immediately suspend current assumptions.
-  2. Query DuckDB for historical context and past solutions via `db_session.py`.
-  3. Execute sequential thinking (`sequentialthinking` MCP tool) to analyze the root cause step-by-step.
-  4. Propose or apply permanent rule/skill updates (`/learn`) so the failure mode can NEVER recur.
-</RULE[AGENTS.md]>
+| Slash Command | First-Step Sidecar | Tool |
+|---|---|---|
+| `/offload-edge` | `cloudflare-inference-mcp-server` | `run_edge_inference` (task_type REQUIRED) |
+| `/orchestrator-do` | `orchestrator-do-mcp-server` | `orchestrator_chat` |
+| `/utilize_the_edge` | `cloudflare-inference-mcp-server` | `run_edge_inference` (task_type REQUIRED) |
+| `/mind` | `workspace-execution-mcp-server` | `workspace_duckdb_query` |
+| `/correct` | `workspace-execution-mcp-server` | `workspace_duckdb_query` (re-execute + persist) |
+| `/remember_recent` | `workspace-execution-mcp-server` | `workspace_duckdb_query` (watermark fetch) |
+| `/telemetry` | `workspace-execution-mcp-server` | `workspace_duckdb_query` |
+| `/harvest` | `workspace-execution-mcp-server` | `workspace_duckdb_query` |
+| `/full_artillery` | `workspace-execution-mcp-server` + `read_url_content` | `workspace_duckdb_query` + Everything (port 7999) |
+| `/brainstorm` | `workspace-execution-mcp-server` | `workspace_duckdb_query` (mind grounding) |
+| `/options` | `workspace-execution-mcp-server` | `workspace_duckdb_query` (history sweep) |
+| `/cloudflare-telemetry` | `wrangler-mcp-server` | `wrangler_pages_project_list` |
+| `/wrangler` | `wrangler-mcp-server` | appropriate wrangler tool |
+| `/search-everything` | `read_url_content` | `http://localhost:7999/?s=<query>&json=1` |
+| `/get-it` | `ask_question` | interactive grill-me questionnaire |
+| `/its_all_fucked_up` | `view_file` | transcript autopsy |
+| `/research` | `cloudflare-inference-mcp-server` | `run_edge_inference` task_type: `research` |
+| `/think` | `invoke_subagent` | TypeName: `research` |
+| `/spar` | `invoke_subagent` | TypeName: `self` |
+| `/delegate` | `invoke_subagent` | TypeName: `self` or `research` |
+| `/jointer` | `workspace-execution-mcp-server` | `workspace_verify_state` |
+| `/build-agent` | `workspace-execution-mcp-server` | `workspace_fs_mutate` |
+| `/jointer` | `workspace-execution-mcp-server` | `workspace_verify_state` |
+| `/web-perf` | `chrome-devtools-mcp` | `lighthouse_audit` |
+| `/operator-advisor` | `workspace-execution-mcp-server` | `workspace_duckdb_query` (mind.duckdb) |
+| `/secrets-vault` | `workspace-execution-mcp-server` | `workspace_fs_mutate` (DPAPI) |
+| `/mcp-server-builder` | `workspace-execution-mcp-server` | `workspace_verify_state` |
+| `/init-perimeter` | `workspace-execution-mcp-server` | `workspace_fs_mutate` |
+| `/fireup` | `agy-mcp-server` | `exec_cmd` |
+| `/toggle-paranoid` | `workspace-execution-mcp-server` | `workspace_fs_mutate` |
+| `/app-purger` | `workspace-execution-mcp-server` | `workspace_verify_state` |
+| `/tactical-storm-dispatch` | `read_url_content` | SPC/NWS URLs |
+| `/forks` | *(context only — no sidecar)* | Output 4 prompts from conversation context |
+| `/zla` | *(reference only — no sidecar)* | Read SKILL.md, output architecture guidance |
+| `/apt-prompter` | *(inline — no sidecar)* | Framework tool, output prompt pipeline |
+| `/google-antigravity-sdk` | `workspace-execution-mcp-server` | `workspace_verify_state` |
+</RULE[slash_command_first_step_invariant]>
 
-<RULE[AGENTS.md]>
-**NTFS Single-Source-of-Truth Hard-Link Invariant:**
-Whenever initializing, updating, or maintaining system-wide configuration files (`AGENTS.md`, `.agentsignore`, `db_session.py`), the agent MUST enforce single-source-of-truth storage at `C:\Users\John\.gemini\config\` and maintain NTFS hard links (`os.link`) to all workspace target directories. Never create isolated copy duplicates of system configuration files.
-</RULE[AGENTS.md]>
+<RULE[uit_duckdb_prefetch_invariant]>
+**9. User Intent Telemetry & DuckDB Pre-Fetch Invariant (UIT):**
+Before answering any user request or acting on ambiguous feedback, execution MUST inspect `mind.duckdb` via `workspace_duckdb_query` to query `mind.corrections` and `agent_memory.v_clean_user_intent` for past user corrections and verified domain rules. Operating without checking historical telemetry when intent or system boundary is questioned is strictly BANNED.
+</RULE[uit_duckdb_prefetch_invariant]>
 
-<RULE[AGENTS.md]>
-**Pure Engineering & Curiosity-Driven R&D Invariant:**
-When brainstorming, exploring system architectures, or proposing R&D vectors, NEVER frame ideas around monetary metrics ($$ savings, ROI, enterprise cost reduction, or commercial SaaS replacement) unless explicitly requested by the user. 
-Focus EXCLUSIVELY on raw technical curiosity, computational elegance, hardware acceleration, novel system paradigms, and tangible daily friction elimination.
-</RULE[AGENTS.md]>
+<RULE[edge_token_preservation_invariant]>
+**10. Edge Offloading & Token Preservation Invariant:**
+Whenever executing long-form summarization, deep research audits, multi-file code linting/refactoring, or broad R&D brainstorming, execution MUST offload cognitive synthesis to Cloudflare Edge (`run_edge_inference` via `cloudflare-inference-mcp-server` or `orchestrator_chat` via `orchestrator-do-mcp-server`). Local Antigravity context MUST act strictly as a thin orchestrator and routing controller to preserve local tokens and prevent context overflow.
+`run_edge_inference` REQUIRES `task_type` arg: `brainstorm | summarize | research | lint | refactor | monitor | vision`. NEVER fire without it — causes immediate MCP validation error.
+</RULE[edge_token_preservation_invariant]>
 
-<RULE[AGENTS.md]>
-**Semantic Trajectory & Operator Identity Invariant:**
-Whenever summarizing or visualizing historical telemetry, user growth, or session history (e.g. `/remember_recent`, `/telemetry`, `/mind`), NEVER default to generic process metadata (such as step volume, diurnal activity, or window focus). 
-Telemetry MUST always perform semantic/linguistic extraction to visualize:
-1. Toolchain & IDE Transitions (e.g., VSCode -> Cursor).
-2. AI Model & Engine Supremacy (e.g., Antigravity vs OpenAI/Claude).
-3. Core Architectural Entrenchment (e.g., Cloudflare Edge, ZLA, DuckDB, PowerShell).
-4. Philosophical & Technical Milestones (e.g., Codex manifestos and breakthroughs).
-</RULE[AGENTS.md]>
+<RULE[engineering_realism_invariant]>
+**11. Engineering Realism & Direct Feasibility Invariant:**
+When evaluated on whether a technology, architecture, or idea is realistic and will work as described, assess real-world constraints (hardware drivers, OS browser blocks, physical noise, memory/CPU bounds). If real-world platform or hardware limits prevent the feature from working as envisioned, state a direct, unvarnished "NO" upfront as the first verdict. Never wrap an unviable concept in a conditional "YES" that depends on non-existent, theoretical, or impractical workarounds.
+</RULE[engineering_realism_invariant]>
 
-<RULE[AGENTS.md]>
-**Concrete Deliverables & Project Telemetry Invariant:**
-Whenever summarizing or visualizing telemetry via `/remember_recent` or `/telemetry`, NEVER output abstract keyword-frequency line charts or word counts.
-Telemetry MUST ALWAYS query disk modification timestamps (c:\dev\) and active DuckDB solution records to display:
-1. Real Project Modification Timestamps (Exact date, time, and target files).
-2. Live Edge & Cloudflare Infrastructure (Pages, Workers, D1 DBs, Durable Objects).
-3. Concrete Code Features & Solves Completed.
-</RULE[AGENTS.md]>
+<RULE[no_schema_guessing_invariant]>
+**12. No Schema Guessing & Live Introspection Invariant:**
+Never copy markdown code blocks or assume database/tool column schemas without running `DESCRIBE <table>` or inspecting live tool schemas first. Always execute DuckDB mutations using explicit `DETACH mind; ATTACH 'C:/Users/John/.gemini/config/mind.duckdb' AS mind (READ_WRITE);` attachments.
+</RULE[no_schema_guessing_invariant]>
 
+<RULE[zero_meta_lecture_invariant]>
+**13. Zero Meta-Lectures & Direct Execution Invariant:**
+Never output multi-paragraph meta-lectures, self-justifying essays, or ask "What is the task?" when the user's intent or telemetry has already been established. Execute tool calls directly, continuously, and silently until complete.
+</RULE[zero_meta_lecture_invariant]>
 
-<RULE[AGENTS.md]>
-**Cloudflare Billing Emergency & Telemetry Invariant:**
-When investigating runaway Cloudflare usage, unknown billing draws, or massive AI token spikes (e.g., Regular Twitch Neurons / RTN):
-1. **DO NOT** blindly attempt to `wrangler tail` multiple projects. This is too slow and prone to WebSocket timeouts during emergencies.
-2. **MANDATORY ACTION**: Immediately execute the Cloudflare Telemetry sweep script (`C:\Users\John\.gemini\config\skills\cloudflare-telemetry\scripts\query_cf.ps1`) to generate the `dashboard.html` report.
-3. Read the generated HTML dashboard and specifically check for anomalous **D1 Database file sizes** (runaway loops instantly bloat their ledger DBs) and **Recent Deployment Timestamps** to instantly isolate the offending project.
-</RULE[AGENTS.md]>
+<RULE[frustration_autofix_invariant]>
+**14. Direct Correction & Zero File Mutation Invariant:**
+When the user triggers `/correct` or provides feedback ("I don't like what you said/did, this is why, now retry it"), DO NOT mutate `AGENTS.md`, system rules, or workspace files unless explicitly commanded. Simply inject the user's correction into context, re-execute the target task with the updated framing, and log the attempt into `mind.duckdb`.
+</RULE[frustration_autofix_invariant]>
 
-<RULE[AGENTS.md]>
-**Operator Identity & Product Vision Invariant:**
-John Dondlinger is an advanced Edge Architect building globally scalable consumer SaaS, AI platforms, and MMOs (e.g., InspectaLlama, Heckler) using Zero-Liability Architecture (ZLA), Cloudflare Workers, Durable Objects, D1, and Blazor WASM.
+<RULE[smooth_execution_mode_invariant]>
+**15. Smooth Execution Mode & Intent Realism Invariant:**
+Telemetry proves that turns succeed smoothly ONLY when execution follows these 3 principles:
+1. **Mechanical Action First**: When given a technical task or bug, execute the tool calls, file edits, and builds immediately without preambles, meta-menus, or options matrices.
+2. **Zero Unsolicited File Mutations on Open-Ended Questions**: Never edit codebase files when the user asks a hypothetical question or starts a conceptual discussion.
+3. **Direct Unvarnished Feasibility Truth**: Answer hardware/OS capability questions with immediate direct honesty upfront (YES/NO), never wrapping unviable designs in theoretical AI loops.
+</RULE[smooth_execution_mode_invariant]>
 
-1. NEVER treat his projects as generic local web-dev agency builds or B2B brochure sites for small businesses.
-2. When explicitly asked about monetization, pricing, or career trajectory, focus EXCLUSIVELY on high-leverage outcomes: 
-   - Solo Founder SaaS models (Stripe subscriptions, premium consumer micro-transactions).
-   - Top-tier remote Edge Architect/Senior Engineer roles.
-3. NEVER propose pitching his advanced edge software as standard agency retainers to local brick-and-mortar businesses unless he explicitly requests a B2B agency workflow.
-</RULE[AGENTS.md]>
+<RULE[zero_prerequisite_optout_invariant]>
+**16. Zero Prerequisite Opt-Out & Direct Execution Invariant:**
+NEVER use minor prerequisites, missing inputs, formatting technicalities, or rule constraints as an excuse to opt out of execution, write text summaries, or present options matrices when direct tool execution, file edits, or code compilation can be performed immediately. DO THE REAL WORK DIRECTLY.
+</RULE[zero_prerequisite_optout_invariant]>
 
-
-<RULE[AGENTS.md]>
-**OrchestratorDO / `>>` Shorthand Dispatch (MCP Migration):**
-When the user types `>> [prompt]` or requests to evaluate something on the Edge, the agent MUST use the `call_mcp_tool` with ServerName: `orchestrator-do-mcp-server` and ToolName: `orchestrator_chat`. 
-Do NOT use the legacy `orchestrator-do-dispatcher` subagent or raw PowerShell scripts. The native MCP server automatically handles DPAPI auth and anti-fluff guardrails with zero UI friction.
-</RULE[AGENTS.md]>
-
-<RULE[AGENTS.md]>
-**Durable Object Broadcast & Mobile HTTP Cache-Busting Invariant:**
-When building live broadcast or real-time state APIs on Cloudflare Workers and Durable Objects:
-1. **Mobile HTTP Cache-Busting**: ALL polling GET endpoints (e.g. `/api/stage/live`) MUST set strict anti-caching headers (`Cache-Control: no-store, no-cache, must-revalidate, max-age=0`) AND append a client-side timestamp parameter (`?_t=Date.now()`) to prevent mobile browsers (Safari/Chrome) from serving stale cached responses.
-2. **Text-Level Deduplication**: DO state history MUST track normalized content strings (e.g., `LOWER(TRIM(text))`), not just entity UUID `id`s. SQL queries selecting fallback sets MUST use `GROUP BY LOWER(TRIM(text))` to prevent duplicate seed rows from re-playing.
-3. **HTTP Heartbeat Listener Tracking**: For platforms supporting non-WebSocket HTTP clients, track active listener sessions via a `clientId` parameter mapped to sliding timestamp heartbeats in DO memory rather than relying solely on `this.ctx.getWebSockets().length`.
-</RULE[AGENTS.md]>
-
-<RULE[AGENTS.md]>
-**Domain-Aware Telemetry SQL Invariant:**
-Whenever querying system history in DuckDB (mind.duckdb, agent_memory.duckdb, st_codex.duckdb) for user behavioral metrics:
-1. NEVER use rigid single-binary strings like LIKE '%ffmpeg%' or LIKE '%magick%'.
-2. ALWAYS expand SQL pattern filters to include verified operator aliases, shell scripts, and asset extensions:
-   - Video Editing & Rendering: Must check process-footage, process-fotage.ps1, blender, %.blend, alongside ffmpeg.
-   - 3D CAD & Spool Operations: Must check pour_logic.scad, %.scad, klipper, octoprint, spool.
-   - PowerShell / Automation Scripts: Must check send-agentmessage.ps1, remember_recent.ps1, clean-templatedemos.ps1, vault.ps1.
-</RULE[AGENTS.md]>
-
-<RULE[AGENTS.md]>
-**Synchronous Execution Invariant for Python & DuckDB Operations:**
-1. **Never Background Quick Commands**: When running Python scripts, DuckDB queries (`db_session.py`), HTTP verification checks, or single-step status probes via `run_command`, ALWAYS set `WaitMsBeforeAsync: 10000` (or `WaitMsBeforeAsync: 8000`) so the command completes synchronously within the step.
-2. **Prevent Database Lock Timeouts**: Asynchronous background Python tasks that query DuckDB hold file locks on DuckDB databases (`mind.duckdb`, `agent_memory.duckdb`) and prevent subsequent agent turns from reading or writing telemetry.
-3. **Immediate Error Visibility**: Running synchronous execution ensures any command failure, traceback, or 
+<RULE[smooth_execution_boot_orientation]>
+**17. Antigravity Smooth Execution & Bulletproof Alignment Invariants:**
+1. **Interactive Grill-Me Alignment (R&D & Conceptual Turns)**: Before generating R&D concepts, architectural plans, or broad brainstorms, call `ask_question` to grill the user with multi-choice questions. Uncover implicit constraints (hardware bounds, location context, stack preferences, physical limits) BEFORE proposing solutions.
+2. **Direct Mechanical Execution (Technical Tasks & Bugs)**: When given an explicit code task, bug fix, or compilation target, SKIP questionnaires and preambles. Execute tool calls, file edits, and builds directly, silently, and continuously until verified complete.
+3. **Zero Prerequisite Opt-Out & No Text Walls**: NEVER use formatting technicalities, missing inputs, or rule constraints as an excuse to opt out of execution or present options matrices. Permanently banned: AI cheerleading, meta-lectures, self-justifying essays, and responses requiring vertical scrolling (>20 lines).
+4. **Direct Feasibility Realism**: If a hardware capability, OS limit, or architectural idea is unviable, state an immediate unvarnished "NO" upfront. Never wrap unviable concepts in theoretical AI loops.
+5. **Zero Mutations on Conceptual Turns**: Never edit codebase files on hypothetical questions or conceptual discussions unless explicitly commanded.
+</RULE[smooth_execution_boot_orientation]>

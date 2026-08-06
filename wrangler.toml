@@ -1,12 +1,9 @@
 name = "personalization"
-compatibility_date = "2024-05-26"
+compatibility_date = "2026-08-06"
 main = "worker.js"
 
-[build]
-command = "bash build.sh"
-
 [assets]
-directory = "output/wwwroot"
+directory = "wwwroot"
 not_found_handling = "single-page-application"
 
 [[d1_databases]]
@@ -17,11 +14,3 @@ database_id = "1128e99a-70e1-458c-b0b7-d548a10a5533"
 [[kv_namespaces]]
 binding = "IDENTITY_CACHE"
 id = "7f3831d3d4274a949e3fcf4e1549d671"
-
-# [ai]
-# binding = "AI"
-
-
-
-
-
