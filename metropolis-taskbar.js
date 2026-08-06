@@ -295,8 +295,14 @@ class MetropolisTaskbar extends HTMLElement {
       } else if (e.target.closest('#btn-modal-close')) {
         root.querySelector('#auth-modal').classList.remove('active');
       } else if (e.target.closest('#btn-settings-toggle')) {
-        const drawer = root.querySelector('#settings-drawer');
-        drawer.classList.toggle('active');
+        const appearanceTabBtn = document.querySelector('.tab-btn[data-tab="tab-appearance"]');
+        if (appearanceTabBtn && window.location.hostname.includes('personalization')) {
+          appearanceTabBtn.click();
+          appearanceTabBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          const drawer = root.querySelector('#settings-drawer');
+          drawer.classList.toggle('active');
+        }
       } else if (e.target.closest('#btn-logout')) {
         this.logout();
       }
