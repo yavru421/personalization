@@ -643,57 +643,67 @@ export default {
 
 
     // Fallback: Static Assets with Edge HTMLRewriter Injection
-    const assetResponse = await env.ASSETS.fetch(request);
-    const contentType = assetResponse.headers.get("content-type") || "";
+    try {
+      const assetResponse = await env.ASSETS.fetch(request);
+      const contentType = assetResponse.headers.get("content-type") || "";
 
-    if (contentType.includes("text/html")) {
-      const claims = await authenticate(request);
-      let sessionData = claims ? { id: claims.sub, email: claims.email, tier: claims.subscription_tier || "free", isAnon: false } : null;
+      if (contentType.includes("text/html")) {
+        let claims = null;
+        try {
+          claims = await authenticate(request);
+        } catch (e) {}
 
-      // Check headers injected downstream by dgc-edge-gate Worker
-      const headerUserId = request.headers.get("X-DGC-User-ID");
-      const headerUserHandle = request.headers.get("X-DGC-User-Handle");
-      const headerUserTier = request.headers.get("X-DGC-User-Tier");
-      const headerIsAnon = request.headers.get("X-DGC-Is-Anon") === "1";
+        let sessionData = claims ? { id: claims.sub, email: claims.email, tier: claims.subscription_tier || "free", isAnon: false } : null;
 
-      if (!sessionData && headerUserId) {
-        sessionData = {
-          id: headerUserId,
-          email: headerUserHandle,
-          tier: headerUserTier || "free",
-          isAnon: headerIsAnon
-        };
-      }
+        // Check headers injected downstream by dgc-edge-gate Worker
+        const headerUserId = request.headers.get("X-DGC-User-ID");
+        const headerUserHandle = request.headers.get("X-DGC-User-Handle");
+        const headerUserTier = request.headers.get("X-DGC-User-Tier");
+        const headerIsAnon = request.headers.get("X-DGC-Is-Anon") === "1";
 
-      let settingsData = {};
+        if (!sessionData && headerUserId) {
+          sessionData = {
+            id: headerUserId,
+            email: headerUserHandle,
+            tier: headerUserTier || "free",
+            isAnon: headerIsAnon
+          };
+        }
 
-      if (claims && env.IDENTITY_CACHE) {
-        const cachedSettings = await env.IDENTITY_CACHE.get(`settings:${claims.sub}`);
-        if (cachedSettings) {
-          try { settingsData = JSON.parse(cachedSettings); } catch(e) {}
-        } else {
+        let settingsData = {};
+
+        if (claims && env.IDENTITY_CACHE) {
           try {
-            const dbSettings = await env.DB.prepare("SELECT settings_json FROM user_settings WHERE user_id = ?").bind(claims.sub).first();
-            if (dbSettings) {
-              settingsData = JSON.parse(dbSettings.settings_json);
-              ctx.waitUntil(env.IDENTITY_CACHE.put(`settings:${claims.sub}`, dbSettings.settings_json));
+            const cachedSettings = await env.IDENTITY_CACHE.get(`settings:${claims.sub}`);
+            if (cachedSettings) {
+              settingsData = JSON.parse(cachedSettings);
+            } else if (env.DB) {
+              const dbSettings = await env.DB.prepare("SELECT settings_json FROM user_settings WHERE user_id = ?").bind(claims.sub).first();
+              if (dbSettings) {
+                settingsData = JSON.parse(dbSettings.settings_json);
+                ctx.waitUntil(env.IDENTITY_CACHE.put(`settings:${claims.sub}`, dbSettings.settings_json));
+              }
             }
           } catch(e) {}
         }
+
+        const injectionScript = `<script>
+          window.__USER_SESSION__ = ${JSON.stringify(sessionData)};
+          window.__USER_SETTINGS__ = ${JSON.stringify(settingsData)};
+        </script>`;
+
+        return new HTMLRewriter()
+          .on("head", {
+            element(el) {
+              el.append(injectionScript, { html: true });
+            }
+          })
+          .transform(assetResponse);
       }
 
-      const injectionScript = `<script>
-        window.__USER_SESSION__ = ${JSON.stringify(sessionData)};
-        window.__USER_SETTINGS__ = ${JSON.stringify(settingsData)};
-      </script>`;
-
-      return new HTMLRewriter()
-        .on("head", {
-          element(el) {
-            el.append(injectionScript, { html: true });
-          }
-        })
-        .transform(assetResponse);
+      return assetResponse;
+    } catch (err) {
+      return new Response("Asset Fetch Error: " + err.message, { status: 500, headers: corsHeaders });
     }
 
     return assetResponse;
