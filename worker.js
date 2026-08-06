@@ -199,11 +199,33 @@ export default {
     // Authenticate user via Cookie or Authorization Header
     const authenticate = async (req) => {
       const cookieHeader = req.headers.get("Cookie");
+
+      // 1. Check dgc-session JWT
       const dgcSession = getCookie(cookieHeader, "dgc-session");
       if (dgcSession) {
         const claims = await verifyJwt(dgcSession);
         if (claims) return claims;
       }
+
+      // 2. Check metropolis_session or dgc_user_session
+      const metroSession = getCookie(cookieHeader, "metropolis_session") || getCookie(cookieHeader, "dgc_user_session");
+      if (metroSession) {
+        try {
+          const parts = metroSession.split('.');
+          if (parts.length >= 2) {
+            let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+            while (base64.length % 4) base64 += '=';
+            const parsed = JSON.parse(atob(base64));
+            return {
+              sub: parsed.sub || parsed.id || 'usr_active',
+              email: parsed.email || parsed.username || 'Authenticated User',
+              subscription_tier: parsed.subscription_tier || parsed.tier || 'free'
+            };
+          }
+        } catch (e) {}
+      }
+
+      // 3. Check Authorization Header
       const authHeader = req.headers.get("Authorization");
       if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
       const token = authHeader.substring(7);
