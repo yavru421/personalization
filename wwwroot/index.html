@@ -22,6 +22,7 @@
     .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; width: 100%; max-width: 480px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
     .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
     .badge { background: var(--accent-glow); color: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; border: 1px solid var(--accent); }
+    .badge.authenticated { background: rgba(63, 185, 80, 0.15); color: var(--success); border-color: var(--success); }
     h1 { font-size: 1.4rem; color: #fff; margin-bottom: 0.5rem; }
     p { font-size: 0.9rem; color: #8b949e; line-height: 1.5; margin-bottom: 1.5rem; }
     .user-info { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; }
@@ -31,6 +32,7 @@
     .info-value { color: #fff; font-weight: 600; }
     .btn { width: 100%; background: var(--accent); color: #0d1117; border: none; padding: 12px; border-radius: 6px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
     .btn:hover { opacity: 0.9; }
+    .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); margin-top: 0.5rem; }
     .subdomain-list { margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem; }
     .subdomain-list h2 { font-size: 0.85rem; text-transform: uppercase; color: #8b949e; margin-bottom: 0.75rem; }
     .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
@@ -44,7 +46,7 @@
       <h1>Account & Preferences</h1>
       <span class="badge" id="tierBadge">Anonymous</span>
     </div>
-    <p>Your session identity is active across all live production subdomains of dondlingergc.com.</p>
+    <p id="subText">Your session identity is active across all live production subdomains of dondlingergc.com.</p>
     
     <div class="user-info">
       <div class="info-row">
@@ -62,6 +64,7 @@
     </div>
 
     <button class="btn" id="upgradeBtn">Claim Account & Upgrade</button>
+    <button class="btn btn-secondary" id="logoutBtn" style="display: none;">Log Out Session</button>
 
     <div class="subdomain-list">
       <h2>Connected Active Subdomains</h2>
@@ -84,14 +87,45 @@
       return match ? decodeURIComponent(match[1]) : null;
     }
 
-    const anonId = parseCookie('dgc_anon_id') || 'usr_anon_demo';
-    const handleSuffix = anonId.slice(-4).toUpperCase();
-    
-    document.getElementById('userId').innerText = anonId;
-    document.getElementById('userHandle').innerText = 'Guest-' + handleSuffix;
+    // Check HTMLRewriter injected session or cookie
+    const session = window.__USER_SESSION__;
+    const anonId = parseCookie('dgc_anon_id') || parseCookie('dgc_user_id');
 
-    document.getElementById('upgradeBtn').addEventListener('click', () => {
-      alert('Claim Account Modal: Upgrade ' + anonId + ' to permanent email login.');
+    const tierBadge = document.getElementById('tierBadge');
+    const userHandle = document.getElementById('userHandle');
+    const userId = document.getElementById('userId');
+    const upgradeBtn = document.getElementById('upgradeBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    if (session && session.id) {
+      // Authenticated User Session
+      tierBadge.innerText = (session.tier || 'AUTHENTICATED').toUpperCase();
+      tierBadge.classList.add('authenticated');
+      userHandle.innerText = session.email || session.id;
+      userId.innerText = session.id;
+      upgradeBtn.innerText = 'Account Settings';
+      logoutBtn.style.display = 'block';
+    } else if (anonId) {
+      // Anonymous Provisioned Session
+      const handleSuffix = anonId.slice(-4).toUpperCase();
+      userId.innerText = anonId;
+      userHandle.innerText = 'Guest-' + handleSuffix;
+    } else {
+      userId.innerText = 'usr_anon_auto';
+      userHandle.innerText = 'Guest-ACTIVE';
+    }
+
+    upgradeBtn.addEventListener('click', () => {
+      if (session && session.id) {
+        alert('Account Settings: Logged in as ' + session.email);
+      } else {
+        alert('Claim Account Modal: Upgrade ' + (anonId || 'session') + ' to permanent email login.');
+      }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.reload();
     });
   </script>
 </body>
