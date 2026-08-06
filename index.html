@@ -6,137 +6,764 @@
   <title>Personalization & Account Hub — dondlingergc.com</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+  <script src="metropolis-taskbar.js"></script>
   <style>
     :root {
       --bg: #0d1117;
       --card-bg: #161b22;
-      --border: #30363d;
+      --card-border: #30363d;
       --text: #c9d1d9;
-      --accent: #58a6ff;
-      --accent-glow: rgba(88, 166, 255, 0.15);
+      --text-muted: #8b949e;
+      --accent: var(--metro-primary, #6366f1);
+      --accent-secondary: var(--metro-accent, #a855f7);
+      --accent-glow: rgba(99, 102, 241, 0.2);
       --success: #3fb950;
+      --danger: #f85149;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 2rem; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; width: 100%; max-width: 480px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-    .badge { background: var(--accent-glow); color: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; border: 1px solid var(--accent); }
-    h1 { font-size: 1.4rem; color: #fff; margin-bottom: 0.5rem; }
-    p { font-size: 0.9rem; color: #8b949e; line-height: 1.5; margin-bottom: 1.5rem; }
-    .user-info { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; }
-    .info-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    
+    .hub-container {
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      width: 100%;
+    }
+
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.1));
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .hero-title h1 { font-size: 1.75rem; color: #fff; font-weight: 800; margin-bottom: 0.4rem; }
+    .hero-title p { color: var(--text-muted); font-size: 0.95rem; }
+
+    .status-chip {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .status-dot { width: 8px; height: 8px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 8px #4ade80; }
+
+    /* Nav Tabs */
+    .tab-bar {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.75rem 1.25rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tab-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.03); border-radius: 6px 6px 0 0; }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* Content Panels */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .grid-layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    .card h2 { font-size: 1.1rem; color: #fff; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; }
+    .card p { font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem; }
+
+    .info-group { background: #0d1117; border: 1px solid var(--card-border); border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem; }
+    .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; font-size: 0.85rem; }
     .info-row:last-child { margin-bottom: 0; }
-    .info-label { color: #8b949e; }
-    .info-value { color: #fff; font-weight: 600; }
-    .btn { width: 100%; background: var(--accent); color: #0d1117; border: none; padding: 12px; border-radius: 6px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
-    .btn:hover { opacity: 0.9; }
-    .subdomain-list { margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem; }
-    .subdomain-list h2 { font-size: 0.85rem; text-transform: uppercase; color: #8b949e; margin-bottom: 0.75rem; }
-    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-    .grid-item { background: #0d1117; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; border: 1px solid var(--border); color: #c9d1d9; text-decoration: none; display: block; text-align: center; }
-    .grid-item:hover { border-color: var(--accent); color: var(--accent); }
+    .info-label { color: var(--text-muted); }
+    .info-val { color: #fff; font-weight: 600; font-family: 'Fira Code', monospace; }
+
+    /* Controls & Form Elements */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
+    .form-control, select {
+      width: 100%;
+      background: #0d1117;
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 0.65rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+    .form-control:focus, select:focus { border-color: var(--accent); }
+
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-label { font-size: 0.875rem; font-weight: 500; color: #fff; }
+    .toggle-sub { font-size: 0.75rem; color: var(--text-muted); }
+
+    .btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn:hover { filter: brightness(1.15); box-shadow: 0 4px 14px var(--accent-glow); }
+    .btn-secondary { background: rgba(255,255,255,0.06); border: 1px solid var(--card-border); color: #fff; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.12); }
+    .btn-danger { background: rgba(248, 81, 73, 0.15); border: 1px solid rgba(248, 81, 73, 0.3); color: var(--danger); }
+    .btn-danger:hover { background: rgba(248, 81, 73, 0.25); }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000000;
+      padding: 1rem;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      background: #161b22;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .modal-header h3 { font-size: 1.25rem; color: #fff; }
+    .close-btn { background: none; border: none; color: var(--text-muted); font-size: 1.25rem; cursor: pointer; }
+    .close-btn:hover { color: #fff; }
+
+    /* Domain Badge Grid */
+    .subdomain-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.6rem; margin-top: 1rem; }
+    .subdomain-chip {
+      background: #0d1117;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text);
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .subdomain-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--card-bg);
+      border: 1px solid var(--accent);
+      color: #fff;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      display: none;
+      z-index: 1000001;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="header">
-      <h1>Account & Preferences</h1>
-      <span class="badge" id="tierBadge">Anonymous</span>
-    </div>
-    <p>Your session identity is active across all live production subdomains of dondlingergc.com.</p>
-    
-    <div class="user-info">
-      <div class="info-row">
-        <span class="info-label">User Handle</span>
-        <span class="info-value" id="userHandle">Loading...</span>
+  <metropolis-taskbar></metropolis-taskbar>
+
+  <div class="hub-container">
+    <div class="hero-banner">
+      <div class="hero-title">
+        <h1>Personalization & Account Hub</h1>
+        <p>Manage your Metropolis session, tweak domain-inclusive taskbars, and customize cross-subdomain preferences.</p>
       </div>
-      <div class="info-row">
-        <span class="info-label">Identity ID</span>
-        <span class="info-value" id="userId">usr_anon_...</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Domain Scope</span>
-        <span class="info-value">*.dondlingergc.com</span>
+      <div class="status-chip" id="statusChip">
+        <span class="status-dot"></span>
+        <span id="statusText">Session Active</span>
       </div>
     </div>
 
-    <button class="btn" id="upgradeBtn">Claim Account & Upgrade</button>
+    <!-- Navigation Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="tab-identity">👤 Identity & Account</button>
+      <button class="tab-btn" data-tab="tab-appearance">🎨 Taskbar Theme & Style</button>
+      <button class="tab-btn" data-tab="tab-links">🛠️ Domains & Links</button>
+      <button class="tab-btn" data-tab="tab-extras">🕹️ Silly Niche Extras</button>
+      <button class="tab-btn" data-tab="tab-telemetry">📡 Telemetry & Edge</button>
+    </div>
 
-    <div class="subdomain-list">
-      <h2>Connected Active Subdomains</h2>
-      <div class="grid">
-        <a class="grid-item" href="https://wazweather.dondlingergc.com">wazweather</a>
-        <a class="grid-item" href="https://inspectallamado.dondlingergc.com">inspectallamado</a>
-        <a class="grid-item" href="https://skydrop.dondlingergc.com">skydrop</a>
-        <a class="grid-item" href="https://heckler.dondlingergc.com">heckler</a>
-        <a class="grid-item" href="https://tap.dondlingergc.com">tap</a>
-        <a class="grid-item" href="https://intake.dondlingergc.com">intake</a>
-        <a class="grid-item" href="https://timelinezla.dondlingergc.com">timelinezla</a>
-        <a class="grid-item" href="https://dondlingergc.com">root hub</a>
+    <!-- TAB 1: IDENTITY & ACCOUNT -->
+    <div class="tab-content active" id="tab-identity">
+      <div class="grid-layout">
+        <div class="card">
+          <h2>Active Session <span id="identityTierBadge" style="font-size: 0.75rem; background: rgba(99,102,241,0.2); color: var(--accent); padding: 2px 8px; border-radius: 10px;">ANONYMOUS</span></h2>
+          <p>Your session token persists across all live production subdomains (*.dondlingergc.com).</p>
+          
+          <div class="info-group">
+            <div class="info-row">
+              <span class="info-label">User Handle</span>
+              <span class="info-val" id="valHandle">Loading...</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Identity ID</span>
+              <span class="info-val" id="valId">usr_anon_...</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Subscription Tier</span>
+              <span class="info-val" id="valTier">FREE</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Credit Balance</span>
+              <span class="info-val" id="valCredits">1,000 pts</span>
+            </div>
+          </div>
+
+          <button class="btn" id="upgradeBtn">Claim Account & Upgrade</button>
+          <button class="btn btn-secondary" id="logoutBtn" style="margin-top: 0.6rem; display: none;">Log Out Session</button>
+        </div>
+
+        <div class="card">
+          <h2>Metropolis Network Scope</h2>
+          <p>Active subdomains bound to your cross-site localStorage & BroadcastChannel session:</p>
+          
+          <div class="subdomain-grid">
+            <a class="subdomain-chip" href="https://wazweather.dondlingergc.com">wazweather</a>
+            <a class="subdomain-chip" href="https://inspectallamado.dondlingergc.com">inspectallamado</a>
+            <a class="subdomain-chip" href="https://skydrop.dondlingergc.com">skydrop</a>
+            <a class="subdomain-chip" href="https://heckler.dondlingergc.com">heckler</a>
+            <a class="subdomain-chip" href="https://tap.dondlingergc.com">tap</a>
+            <a class="subdomain-chip" href="https://intake.dondlingergc.com">intake</a>
+            <a class="subdomain-chip" href="https://timelinezla.dondlingergc.com">timelinezla</a>
+            <a class="subdomain-chip" href="https://personalization.dondlingergc.com">personalization</a>
+          </div>
+
+          <div style="margin-top: 1.5rem;">
+            <button class="btn btn-danger" id="btnResetState">Reset Local State & Cookies</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: APPEARANCE & THEMES -->
+    <div class="tab-content" id="tab-appearance">
+      <div class="grid-layout">
+        <div class="card">
+          <h2>Taskbar Theme Engine</h2>
+          <p>Select a preset visual theme to inject CSS variables into all *.dondlingergc.com taskbars in real time.</p>
+          
+          <div class="form-group">
+            <label>Preset Color Theme</label>
+            <select id="selTheme">
+              <option value="cyberpunk-dark">Cyberpunk Dark (Indigo & Purple)</option>
+              <option value="high-contrast">High Contrast OLED (Yellow & Blue)</option>
+              <option value="emerald">Emerald Glass (Teal & Mint)</option>
+              <option value="synthwave-80s">Synthwave '80s (Hot Pink & Cyan)</option>
+              <option value="matrix-green">Matrix Terminal (Phosphor Green)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Custom Brand Logo Title</label>
+            <input type="text" class="form-control" id="txtCustomTitle" placeholder="Metropolis OS" />
+          </div>
+
+          <div class="form-group">
+            <label>Custom Neon Accent Color</label>
+            <input type="color" id="pickerAccent" value="#6366f1" style="width: 100%; height: 40px; border-radius: 6px; border: 1px solid var(--card-border); background: #0d1117; cursor: pointer;" />
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Visual Filters & Layout</h2>
+          <p>Toggle retro scanlines, compact navigation, or custom display density.</p>
+
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">CRT Retro Scanlines</div>
+              <div class="toggle-sub">Inject subtle CRT raster scanline overlay</div>
+            </div>
+            <input type="checkbox" id="chkCRT" />
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Compact Taskbar Navigation</div>
+              <div class="toggle-sub">Hide full subdomain bar for minimal view</div>
+            </div>
+            <input type="checkbox" id="chkCompact" />
+          </div>
+
+          <div style="margin-top: 1.5rem;">
+            <button class="btn" id="btnSaveAppearance">Save & Broadcast Appearance</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: DOMAINS & LINKS -->
+    <div class="tab-content" id="tab-links">
+      <div class="card">
+        <h2>Custom Taskbar Domain Links</h2>
+        <p>Customize the list and order of subdomain shortcut links displayed on your persistent taskbar.</p>
+        
+        <div id="linkEditorContainer" style="display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.25rem;">
+          <!-- Dynamically generated link rows -->
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <button class="btn btn-secondary" id="btnAddCustomLink">+ Add Custom Link</button>
+          <button class="btn" id="btnSaveLinks">Apply Link Order</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: SILLY NICHE EXTRAS -->
+    <div class="tab-content" id="tab-extras">
+      <div class="grid-layout">
+        <div class="card">
+          <h2>Taskbar Status Marquee Ticker</h2>
+          <p>Write your own custom marquee ticker message displayed inside the taskbar across all subdomains!</p>
+          
+          <div class="form-group">
+            <label>Ticker Message</label>
+            <input type="text" class="form-control" id="txtTicker" value="⚡ METROPOLIS OS // CROSS-DOMAIN IDENTITY & PREFERENCES ACTIVE" />
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">8-Bit Web Audio Click Sound FX</div>
+              <div class="toggle-sub">Play synthesized retro click tones on button presses</div>
+            </div>
+            <input type="checkbox" id="chkSound" checked />
+          </div>
+
+          <div style="margin-top: 1.25rem;">
+            <button class="btn" id="btnSaveTicker">Broadcast Ticker Message</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Retro Easter Eggs & Extras</h2>
+          <p>Fun niche tools and secret interactive easter eggs.</p>
+
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Konami Code Listener</div>
+              <div class="toggle-sub">Press ↑ ↑ ↓ ↓ ← → ← → B A anywhere to trigger party mode</div>
+            </div>
+            <span style="font-size: 0.8rem; color: #4ade80; font-weight: 700;">ACTIVE</span>
+          </div>
+
+          <div style="margin-top: 1.5rem;">
+            <button class="btn btn-secondary" id="btnTestSound">🔊 Test 8-Bit Audio Synth Beep</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: TELEMETRY & EDGE -->
+    <div class="tab-content" id="tab-telemetry">
+      <div class="card">
+        <h2>Edge Telemetry & Cloudflare Controls</h2>
+        <p>Configure Cloudflare Workers AI router mode, live telemetry stream frequency, and inspect edge node connectivity.</p>
+        
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Live Telemetry Collection</div>
+            <div class="toggle-sub">Stream client UX telemetry to Cloudflare Edge KV</div>
+          </div>
+          <input type="checkbox" id="chkTelemetry" checked />
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Pro High-Def Radar Stream</div>
+            <div class="toggle-sub">Enable HD canvas radar processing for weather app</div>
+          </div>
+          <input type="checkbox" id="chkRadar" checked />
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+          <button class="btn" id="btnSaveTelemetry">Save Telemetry Controls</button>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Claim Account & Upgrade Modal -->
+  <div class="modal-overlay" id="claimModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalHeaderTitle">Claim Account & Upgrade Identity</h3>
+        <button class="close-btn" id="btnCloseClaimModal">✕</button>
+      </div>
+      <p id="modalSubtext" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+        Upgrade your anonymous session (<span id="modalAnonId" style="color: #fff; font-family: monospace;">usr_anon_auto</span>) to a permanent email identity with cross-subdomain sync.
+      </p>
+      <form id="claimAccountForm">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" class="form-control" id="claimEmail" placeholder="operator@dondlingergc.com" required />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" class="form-control" id="claimPassword" placeholder="••••••••••••" required />
+        </div>
+        <div class="form-group">
+          <label>Subscription Tier</label>
+          <select id="claimTier">
+            <option value="FREE">Free Tier (1,000 pts)</option>
+            <option value="PRO TIER" selected>Pro Tier (Unlimited Edge Access)</option>
+            <option value="METROPOLIS OPERATOR">Metropolis Operator (Admin)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn" style="width: 100%; margin-top: 0.5rem;">Claim Account Now</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast">Preferences saved & broadcast!</div>
+
   <script>
-    function parseJwt(token) {
-      try {
-        const base64Url = token.split('.')[1];
-        if (!base64Url) return null;
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        return JSON.parse(jsonPayload);
-      } catch (e) {
-        return null;
-      }
+    // Tab Switching Logic
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Toast Notice Helper
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 3000);
     }
 
-    function parseCookie(name) {
+    // Helper to get preferences
+    function getPrefs() {
+      try {
+        const stored = localStorage.getItem('metropolis_prefs');
+        if (stored) return JSON.parse(stored);
+      } catch (e) {}
+      return {
+        theme: 'cyberpunk-dark',
+        customTitle: 'Metropolis OS',
+        accentColor: '#6366f1',
+        telemetry: true,
+        highDefRadar: true,
+        compactNav: false,
+        crtMode: false,
+        soundFx: true,
+        tickerText: '⚡ METROPOLIS OS // CROSS-DOMAIN IDENTITY & PREFERENCES ACTIVE',
+        customLinks: [
+          { name: 'WazWeather', host: 'wazweather.dondlingergc.com' },
+          { name: 'InspectAllamado', host: 'inspectallamado.dondlingergc.com' },
+          { name: 'SkyDrop', host: 'skydrop.dondlingergc.com' },
+          { name: 'Heckler', host: 'heckler.dondlingergc.com' },
+          { name: 'Tap', host: 'tap.dondlingergc.com' },
+          { name: 'Intake', host: 'intake.dondlingergc.com' },
+          { name: 'Timeline ZLA', host: 'timelinezla.dondlingergc.com' },
+          { name: 'Personalization', host: 'personalization.dondlingergc.com' }
+        ]
+      };
+    }
+
+    function savePrefs(newPrefs) {
+      const prefs = { ...getPrefs(), ...newPrefs };
+      localStorage.setItem('metropolis_prefs', JSON.stringify(prefs));
+      const bc = new BroadcastChannel('metropolis_session');
+      bc.postMessage({ type: 'PREFS_UPDATE', preferences: prefs });
+      
+      const tb = document.querySelector('metropolis-taskbar');
+      if (tb && typeof tb.savePreferences === 'function') {
+        tb.savePreferences(prefs);
+      }
+      showToast('Preferences updated and broadcast to all tabs!');
+    }
+
+    // Session helper
+    function getCookie(name) {
       const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]+)'));
       return match ? decodeURIComponent(match[1]) : null;
     }
 
-    // Read session from metropolis_session JWT, window.__USER_SESSION__, or cookies
-    const rawJwt = parseCookie('metropolis_session') || parseCookie('dgc_user_session');
-    const jwtUser = rawJwt ? parseJwt(rawJwt) : null;
-    const session = jwtUser || window.__USER_SESSION__;
-    const anonId = parseCookie('dgc_anon_id') || 'usr_anon_auto';
-
-    const tierBadge = document.getElementById('tierBadge');
-    const userHandle = document.getElementById('userHandle');
-    const userId = document.getElementById('userId');
-    const upgradeBtn = document.getElementById('upgradeBtn');
-
-    const email = session?.username || session?.email || parseCookie('dgc_user_email');
-    const isAuthenticated = !!(email && email.includes('@')) || (session && session.tier);
-
-    if (isAuthenticated) {
-      tierBadge.innerText = (session?.tier || 'AUTHENTICATED').toUpperCase();
-      tierBadge.style.background = 'rgba(63, 185, 80, 0.15)';
-      tierBadge.style.color = '#3fb950';
-      tierBadge.style.borderColor = '#3fb950';
-      userHandle.innerText = email || session?.username || 'Authenticated User';
-      userId.innerText = session?.id || email || 'usr_active';
-      upgradeBtn.innerText = 'Manage Account & Preferences';
-      upgradeBtn.style.background = '#238636';
-      upgradeBtn.style.color = '#ffffff';
-    } else {
-      const handleSuffix = anonId.slice(-4).toUpperCase();
-      userId.innerText = anonId;
-      userHandle.innerText = 'Guest-' + handleSuffix;
-      tierBadge.innerText = 'ANONYMOUS';
-      upgradeBtn.innerText = 'Claim Account & Upgrade';
+    function getSession() {
+      if (window.__USER_SESSION__) return window.__USER_SESSION__;
+      const rawVal = getCookie('metropolis_session') || getCookie('dgc-session') || getCookie('dgc_user_session');
+      if (!rawVal) return null;
+      try {
+        const parts = rawVal.split('.');
+        if (parts.length >= 2) {
+          let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+          while (base64.length % 4) base64 += '=';
+          const jsonStr = atob(base64);
+          const parsed = JSON.parse(jsonStr);
+          return {
+            id: parsed.sub || parsed.id || 'usr_active',
+            email: parsed.email || parsed.username || 'Authenticated User',
+            tier: (parsed.subscription_tier || parsed.tier || 'Free').toUpperCase(),
+            isAnon: false
+          };
+        }
+      } catch (e) {}
+      return { email: rawVal, tier: 'FREE', isAnon: false };
     }
 
-    upgradeBtn.addEventListener('click', () => {
-      if (isAuthenticated) {
-        alert('Account Settings: Signed in as ' + (email || 'Active User'));
+    function updateSessionUI() {
+      const session = getSession();
+      const anonId = getCookie('dgc_anon_id') || 'usr_anon_auto';
+
+      const valHandle = document.getElementById('valHandle');
+      const valId = document.getElementById('valId');
+      const valTier = document.getElementById('valTier');
+      const identityTierBadge = document.getElementById('identityTierBadge');
+      const upgradeBtn = document.getElementById('upgradeBtn');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const statusText = document.getElementById('statusText');
+
+      if (session && session.email && session.email.includes('@')) {
+        valHandle.innerText = session.email;
+        valId.innerText = session.id || session.email;
+        valTier.innerText = session.tier;
+        identityTierBadge.innerText = session.tier;
+        identityTierBadge.style.background = 'rgba(34, 197, 94, 0.2)';
+        identityTierBadge.style.color = '#4ade80';
+        upgradeBtn.innerText = 'Manage Account & Upgrade Tier';
+        logoutBtn.style.display = 'block';
+        statusText.innerText = 'Authenticated (' + session.email + ')';
       } else {
-        alert('Claim Account Modal: Upgrade ' + anonId + ' to permanent email login.');
+        const handleSuffix = anonId.slice(-4).toUpperCase();
+        valHandle.innerText = 'Guest-' + handleSuffix;
+        valId.innerText = anonId;
+        valTier.innerText = 'ANONYMOUS';
+        identityTierBadge.innerText = 'ANONYMOUS';
+        upgradeBtn.innerText = 'Claim Account & Upgrade';
+        logoutBtn.style.display = 'none';
+        statusText.innerText = 'Anonymous Identity Active';
+      }
+    }
+
+    // Modal Controls
+    const claimModal = document.getElementById('claimModal');
+    const upgradeBtn = document.getElementById('upgradeBtn');
+    const btnCloseClaimModal = document.getElementById('btnCloseClaimModal');
+
+    window.openClaimModal = function() {
+      const anonId = getCookie('dgc_anon_id') || 'usr_anon_auto';
+      document.getElementById('modalAnonId').innerText = anonId;
+      claimModal.classList.add('active');
+    };
+
+    upgradeBtn.addEventListener('click', window.openClaimModal);
+    btnCloseClaimModal.addEventListener('click', () => claimModal.classList.remove('active'));
+
+    // Claim Account Form Handler
+    document.getElementById('claimAccountForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('claimEmail').value;
+      const password = document.getElementById('claimPassword').value;
+      const tier = document.getElementById('claimTier').value;
+
+      try {
+        await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Metropolis-Request': '1' },
+          body: JSON.stringify({ email, password, tier })
+        });
+      } catch (err) {}
+
+      // Set cookie across domain
+      const expStr = new Date(Date.now() + 30 * 86400 * 1000).toUTCString();
+      const payloadStr = btoa(JSON.stringify({ username: email, email: email, tier: tier }));
+      document.cookie = `metropolis_session=header.${payloadStr}.sig; Domain=.dondlingergc.com; Path=/; Expires=${expStr}; SameSite=Lax`;
+      
+      window.__USER_SESSION__ = { id: 'usr_' + Date.now(), email: email, tier: tier, isAnon: false };
+      
+      const bc = new BroadcastChannel('metropolis_session');
+      bc.postMessage({ type: 'SESSION_UPDATE' });
+
+      claimModal.classList.remove('active');
+      updateSessionUI();
+      showToast('🎉 Account Claimed! Welcome ' + email);
+    });
+
+    // Logout Handler
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try { await fetch('/api/auth/logout', { method: 'POST' }); } catch(e) {}
+      document.cookie = 'metropolis_session=; Domain=.dondlingergc.com; Path=/; Max-Age=0';
+      document.cookie = 'dgc-session=; Domain=.dondlingergc.com; Path=/; Max-Age=0';
+      window.__USER_SESSION__ = null;
+      const bc = new BroadcastChannel('metropolis_session');
+      bc.postMessage({ type: 'SESSION_UPDATE' });
+      updateSessionUI();
+      showToast('Logged out session.');
+    });
+
+    // Reset Local State
+    document.getElementById('btnResetState').addEventListener('click', () => {
+      localStorage.clear();
+      document.cookie = 'metropolis_session=; Domain=.dondlingergc.com; Path=/; Max-Age=0';
+      window.location.reload();
+    });
+
+    // Populate Form Elements from Prefs
+    const prefs = getPrefs();
+    document.getElementById('selTheme').value = prefs.theme || 'cyberpunk-dark';
+    document.getElementById('txtCustomTitle').value = prefs.customTitle || 'Metropolis OS';
+    document.getElementById('pickerAccent').value = prefs.accentColor || '#6366f1';
+    document.getElementById('chkCRT').checked = !!prefs.crtMode;
+    document.getElementById('chkCompact').checked = !!prefs.compactNav;
+    document.getElementById('txtTicker').value = prefs.tickerText || '';
+    document.getElementById('chkSound').checked = !!prefs.soundFx;
+    document.getElementById('chkTelemetry').checked = !!prefs.telemetry;
+    document.getElementById('chkRadar').checked = !!prefs.highDefRadar;
+
+    // Appearance Save Button
+    document.getElementById('btnSaveAppearance').addEventListener('click', () => {
+      savePrefs({
+        theme: document.getElementById('selTheme').value,
+        customTitle: document.getElementById('txtCustomTitle').value,
+        accentColor: document.getElementById('pickerAccent').value,
+        crtMode: document.getElementById('chkCRT').checked,
+        compactNav: document.getElementById('chkCompact').checked
+      });
+    });
+
+    // Ticker Save Button
+    document.getElementById('btnSaveTicker').addEventListener('click', () => {
+      savePrefs({
+        tickerText: document.getElementById('txtTicker').value,
+        soundFx: document.getElementById('chkSound').checked
+      });
+    });
+
+    // Telemetry Save Button
+    document.getElementById('btnSaveTelemetry').addEventListener('click', () => {
+      savePrefs({
+        telemetry: document.getElementById('chkTelemetry').checked,
+        highDefRadar: document.getElementById('chkRadar').checked
+      });
+    });
+
+    // Sound Test Button
+    document.getElementById('btnTestSound').addEventListener('click', () => {
+      const tb = document.querySelector('metropolis-taskbar');
+      if (tb && typeof tb.playBeep === 'function') {
+        tb.playBeep(784, 'triangle', 0.15);
       }
     });
+
+    // Link Editor Renderer
+    function renderLinkEditor() {
+      const container = document.getElementById('linkEditorContainer');
+      container.innerHTML = '';
+      const links = prefs.customLinks || [];
+
+      links.forEach((link, idx) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; gap: 0.5rem; align-items: center;';
+        row.innerHTML = `
+          <input type="text" class="form-control" value="${link.name}" style="flex: 1;" data-idx="${idx}" data-field="name" />
+          <input type="text" class="form-control" value="${link.host}" style="flex: 2;" data-idx="${idx}" data-field="host" />
+          <button class="btn btn-danger" style="width: 36px; padding: 0;" data-del="${idx}">✕</button>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    document.getElementById('btnAddCustomLink').addEventListener('click', () => {
+      prefs.customLinks.push({ name: 'New Link', host: 'subdomain.dondlingergc.com' });
+      renderLinkEditor();
+    });
+
+    document.getElementById('linkEditorContainer').addEventListener('click', (e) => {
+      if (e.target.dataset.del !== undefined) {
+        prefs.customLinks.splice(parseInt(e.target.dataset.del, 10), 1);
+        renderLinkEditor();
+      }
+    });
+
+    document.getElementById('btnSaveLinks').addEventListener('click', () => {
+      const inputs = document.querySelectorAll('#linkEditorContainer input');
+      inputs.forEach(inp => {
+        const idx = parseInt(inp.dataset.idx, 10);
+        const field = inp.dataset.field;
+        if (prefs.customLinks[idx]) {
+          prefs.customLinks[idx][field] = inp.value;
+        }
+      });
+      savePrefs({ customLinks: prefs.customLinks });
+    });
+
+    // Listen for Broadcast Updates
+    const bc = new BroadcastChannel('metropolis_session');
+    bc.onmessage = (event) => {
+      if (event.data?.type === 'SESSION_UPDATE') {
+        updateSessionUI();
+      }
+    };
+
+    // Initial load
+    updateSessionUI();
+    renderLinkEditor();
   </script>
 </body>
 </html>
