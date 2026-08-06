@@ -620,7 +620,23 @@ export default {
 
     if (contentType.includes("text/html")) {
       const claims = await authenticate(request);
-      let sessionData = claims ? { id: claims.sub, email: claims.email, tier: claims.subscription_tier || "free" } : null;
+      let sessionData = claims ? { id: claims.sub, email: claims.email, tier: claims.subscription_tier || "free", isAnon: false } : null;
+
+      // Check headers injected downstream by dgc-edge-gate Worker
+      const headerUserId = request.headers.get("X-DGC-User-ID");
+      const headerUserHandle = request.headers.get("X-DGC-User-Handle");
+      const headerUserTier = request.headers.get("X-DGC-User-Tier");
+      const headerIsAnon = request.headers.get("X-DGC-Is-Anon") === "1";
+
+      if (!sessionData && headerUserId) {
+        sessionData = {
+          id: headerUserId,
+          email: headerUserHandle,
+          tier: headerUserTier || "free",
+          isAnon: headerIsAnon
+        };
+      }
+
       let settingsData = {};
 
       if (claims && env.IDENTITY_CACHE) {

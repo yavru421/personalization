@@ -87,7 +87,6 @@
       return match ? decodeURIComponent(match[1]) : null;
     }
 
-    // Check HTMLRewriter injected session or cookie
     const session = window.__USER_SESSION__;
     const anonId = parseCookie('dgc_anon_id') || parseCookie('dgc_user_id');
 
@@ -97,14 +96,19 @@
     const upgradeBtn = document.getElementById('upgradeBtn');
     const logoutBtn = document.getElementById('logoutBtn');
 
-    if (session && session.id) {
-      // Authenticated User Session
+    const isAuthenticated = session && (session.isAnon === false || (session.email && session.email.includes('@')));
+
+    if (isAuthenticated) {
+      // Authenticated Logged-In User Session (e.g. johndondlinger21@gmail.com)
       tierBadge.innerText = (session.tier || 'AUTHENTICATED').toUpperCase();
       tierBadge.classList.add('authenticated');
       userHandle.innerText = session.email || session.id;
       userId.innerText = session.id;
       upgradeBtn.innerText = 'Account Settings';
       logoutBtn.style.display = 'block';
+    } else if (session && session.id) {
+      userId.innerText = session.id;
+      userHandle.innerText = session.email || ('Guest-' + session.id.slice(-4).toUpperCase());
     } else if (anonId) {
       // Anonymous Provisioned Session
       const handleSuffix = anonId.slice(-4).toUpperCase();
@@ -116,7 +120,7 @@
     }
 
     upgradeBtn.addEventListener('click', () => {
-      if (session && session.id) {
+      if (isAuthenticated) {
         alert('Account Settings: Logged in as ' + session.email);
       } else {
         alert('Claim Account Modal: Upgrade ' + (anonId || 'session') + ' to permanent email login.');
