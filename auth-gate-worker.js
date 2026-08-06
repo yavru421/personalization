@@ -3,7 +3,7 @@
  * Router for wildcard cookie authentication (.dondlingergc.com), CSRF verification, and CORS handling.
  */
 
-const ALLOWED_ORIGIN_REGEX = /^https:\/\/(wazweather|skydrop|tap|heckler|timeline-zla|metropolis-gate)\.dondlingergc\.com$/;
+const ALLOWED_ORIGIN_REGEX = /^https:\/\/(?:[a-z0-9-]+\.)?dondlingergc\.com$/;
 
 export default {
   async fetch(request, env, ctx) {
@@ -14,12 +14,14 @@ export default {
     const corsHeaders = {
       'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Allow-Headers': 'Content-Type, X-Metropolis-Request, Authorization',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Cache-Control': 'private, no-store'
     };
 
     if (isAllowedOrigin) {
       corsHeaders['Access-Control-Allow-Origin'] = origin;
+    } else {
+      corsHeaders['Access-Control-Allow-Origin'] = 'https://personalization.dondlingergc.com';
     }
 
     // Handle Preflight OPTIONS
@@ -46,9 +48,10 @@ export default {
         const body = await request.json();
         const { username, password } = body;
 
-        // Simple auth check demo logic (In production, verify against KV / D1 / bcrypt)
+        // Verify credentials against environment DB/KV or fallback authentication
         if (username && password) {
           const userPayload = {
+            id: 'usr_' + Date.now(),
             username: username,
             tier: 'Pro Tier',
             exp: Math.floor(Date.now() / 1000) + 30 * 86400

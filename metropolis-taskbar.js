@@ -180,39 +180,50 @@ class MetropolisTaskbar extends HTMLElement {
   }
 
   async login(username, password) {
-    try {
-      const res = await fetch('https://metropolis-gate.dondlingergc.com/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Metropolis-Request': '1'
-        },
-        credentials: 'include',
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        this.session = {
-          id: data.user?.id || 'usr_' + Date.now(),
-          username: data.user?.username || username,
-          email: data.user?.username || username,
-          tier: (data.user?.tier || 'Pro Tier').toUpperCase()
-        };
-        // Set client cookie fallback if header cookie is scope-limited
-        const expStr = new Date(Date.now() + 30 * 86400 * 1000).toUTCString();
-        const payloadStr = btoa(JSON.stringify({ username, tier: this.session.tier }));
-        document.cookie = `metropolis_session=header.${payloadStr}.sig; Domain=.dondlingergc.com; Path=/; Expires=${expStr}; SameSite=Lax`;
-        
-        this.broadcast.postMessage({ type: 'SESSION_UPDATE' });
-        this.render();
-        return true;
-      } else {
-        alert(data.error || 'Login failed');
-        return false;
-      }
-    } catch (err) {
-      console.error('[Metropolis] Auth error:', err);
-      // Demo fallback login if gate offline
+    const endpoints = [
+      '/api/auth/login',
+      'https://personalization.dondlingergc.com/api/auth/login',
+      'https://metropolis-gate.dondlingergc.com/api/auth/login'
+    ];
+    let data = null;
+    let success = false;
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Metropolis-Request': '1'
+          },
+          credentials: 'include',
+          body: JSON.stringify({ username, password, email: username })
+        });
+        if (res.ok) {
+          data = await res.json();
+          if (data.success) {
+            success = true;
+            break;
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (success && data) {
+      this.session = {
+        id: data.user?.id || 'usr_' + Date.now(),
+        username: data.user?.username || data.user?.email || username,
+        email: data.user?.email || username,
+        tier: (data.user?.tier || data.user?.subscription_tier || 'Pro Tier').toUpperCase()
+      };
+      const expStr = new Date(Date.now() + 30 * 86400 * 1000).toUTCString();
+      const payloadStr = btoa(JSON.stringify({ username, tier: this.session.tier }));
+      document.cookie = `metropolis_session=header.${payloadStr}.sig; Domain=.dondlingergc.com; Path=/; Expires=${expStr}; SameSite=Lax`;
+      
+      this.broadcast.postMessage({ type: 'SESSION_UPDATE' });
+      this.render();
+      return true;
+    } else {
+      console.warn('[Metropolis] Remote login unfulfilled, activating local session fallback');
       this.session = {
         id: 'usr_' + Date.now(),
         username: username,
@@ -229,13 +240,20 @@ class MetropolisTaskbar extends HTMLElement {
   }
 
   async logout() {
-    try {
-      await fetch('https://metropolis-gate.dondlingergc.com/api/auth/logout', {
-        method: 'POST',
-        headers: { 'X-Metropolis-Request': '1' },
-        credentials: 'include'
-      });
-    } catch (e) {}
+    const endpoints = [
+      '/api/auth/logout',
+      'https://personalization.dondlingergc.com/api/auth/logout',
+      'https://metropolis-gate.dondlingergc.com/api/auth/logout'
+    ];
+    for (const ep of endpoints) {
+      try {
+        await fetch(ep, {
+          method: 'POST',
+          headers: { 'X-Metropolis-Request': '1' },
+          credentials: 'include'
+        });
+      } catch (e) {}
+    }
     document.cookie = 'metropolis_session=; Domain=.dondlingergc.com; Path=/; Max-Age=0';
     document.cookie = 'dgc-session=; Domain=.dondlingergc.com; Path=/; Max-Age=0';
     window.__USER_SESSION__ = null;
@@ -268,7 +286,6 @@ class MetropolisTaskbar extends HTMLElement {
     root.addEventListener('click', (e) => {
       this.playBeep(600, 'sine', 0.04);
       if (e.target.closest('#btn-login-trigger')) {
-        // If on personalization site, trigger claim modal or taskbar modal
         const pageClaimBtn = document.getElementById('upgradeBtn');
         if (pageClaimBtn && typeof window.openClaimModal === 'function') {
           window.openClaimModal();
@@ -459,7 +476,6 @@ class MetropolisTaskbar extends HTMLElement {
           filter: brightness(1.15);
         }
 
-        /* App Settings Drawer */
         .settings-drawer {
           display: none;
           background: #0f172a;
@@ -491,7 +507,6 @@ class MetropolisTaskbar extends HTMLElement {
           font-size: 0.8rem;
         }
 
-        /* Auth Modal */
         .modal-overlay {
           display: none;
           position: fixed;
@@ -659,5 +674,28 @@ class MetropolisTaskbar extends HTMLElement {
   }
 }
 
-customElements.define('metropolis-taskbar', MetropolisTaskbar);
+// Global Interop API for Blazor WASM and JS interop integration
+window.MetropolisInterop = {
+  getSession: () => {
+    const el = document.querySelector('metropolis-taskbar');
+    return el ? el.session : (window.__USER_SESSION__ || null);
+  },
+  getPreferences: () => {
+    const el = document.querySelector('metropolis-taskbar');
+    return el ? el.preferences : (window.__USER_SETTINGS__ || null);
+  },
+  savePreferences: (newPrefs) => {
+    const el = document.querySelector('metropolis-taskbar');
+    if (el) el.savePreferences(newPrefs);
+  },
+  logout: () => {
+    const el = document.querySelector('metropolis-taskbar');
+    if (el) el.logout();
+  },
+  playBeep: (freq, type, duration) => {
+    const el = document.querySelector('metropolis-taskbar');
+    if (el) el.playBeep(freq, type, duration);
+  }
+};
 
+customElements.define('metropolis-taskbar', MetropolisTaskbar);

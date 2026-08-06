@@ -8,17 +8,23 @@ export default {
       "https://personalization.dondlingergc.com",
       "https://wazweather.dondlingergc.com",
       "https://inspectallamado.dondlingergc.com",
+      "https://skydrop.dondlingergc.com",
+      "https://heckler.dondlingergc.com",
+      "https://tap.dondlingergc.com",
+      "https://timelinezla.dondlingergc.com",
+      "https://intake.dondlingergc.com",
+      "https://dondlingergc.com",
       "http://localhost:5000",
       "https://localhost:5001"
     ];
     const corsOrigin = (origin && (allowedOrigins.includes(origin) || origin.endsWith(".dondlingergc.com")))
       ? origin
-      : "https://wazweather.dondlingergc.com";
+      : "https://personalization.dondlingergc.com";
 
     const corsHeaders = {
       "Access-Control-Allow-Origin": corsOrigin,
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Metropolis-Request",
       "Access-Control-Allow-Credentials": "true",
     };
 
