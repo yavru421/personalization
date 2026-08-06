@@ -15,6 +15,12 @@ class MetropolisTaskbar extends HTMLElement {
   }
 
   connectedCallback() {
+    // Auto-purge legacy redundant #dgc-global-taskbar element if injected downstream
+    const legacy = document.getElementById('dgc-global-taskbar');
+    if (legacy) legacy.remove();
+    const legacyStyles = Array.from(document.querySelectorAll('style')).filter(s => s.textContent.includes('#dgc-global-taskbar'));
+    legacyStyles.forEach(s => s.remove());
+
     this.applyPreferencesToHost();
     this.render();
     this.setupListeners();
